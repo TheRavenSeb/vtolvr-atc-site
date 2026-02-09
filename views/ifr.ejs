@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- add meta data for the page-->
+
+  <meta name="description" content="IFR Flight Planning Sheet for IFR Flights in VTOL VR including sections for general information, flight details, fuel planning, weather, navigation, crew info, radio frequencies, and additional notes.">
+
+  <meta name="keywords" content="IFR, Flight Planning, VTOL VR, Aviation, Flight Sheet, Navigation, Weather Briefing, Fuel Planning, Pilot Information">
+  <meta name="author" content="Caleb Thomas">
+  <!-- Include html2canvas library for screenshot functionality -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <title>VFR Flight Planning Sheet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border: 1px solid #ddd;
+    }
+    /*!SECTION: Squawk Code Styling is placed in the title as a <span> on the right side of the title */
+    .squawk-code { 
+      float: right;
+      font-size: 0.9rem;
+      color: #007bff;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-weight: bold;
+      font-size: 1.2rem;
+      border-bottom: 2px solid #007bff;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+    }
+
+    .form-row {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .form-group {
+      flex: 1;
+      margin-right: 10px;
+      min-width: 200px;
+    }
+    .form-group-copilot {
+      flex: 1;
+      margin-right: 10px;
+      min-width: 200px;
+      display: none;
+    }
+
+    .form-group:last-child {
+      margin-right: 0;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+
+    textarea {
+      resize: none;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    td input {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .save-button {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .save-button button {
+      font-size: 1rem;
+      padding: 10px 20px;
+    }
+  </style>
+</head>
+<body id="capture-area">
+  <div class="container">
+    <h1>IFR Flight Planning Sheet</h1>
+    <!-- General Session Section -->
+     <div class="section">
+      <div class="section-title">General Information <span class="squawk-code" id="squawkCode"> Aircraft ID (squawk Code): 0000</span></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="date">Date:</label>
+          <input type="date" id="date" name="date">
+        </div>
+        <div class="form-group">
+          <label for="sessionID">Session ID:</label>
+          <input type="text" id="sessionID" name="sessionID" placeholder="ABC123">
+        </div>
+        <div class="form-group">
+          <label for="sessionMap">Session Map:</label>
+          <input type="text" id="sessionMap" name="sessionMap" placeholder="GFA Forest">
+        </div>
+        </div>
+    <!-- Flight Information Section -->
+    <div class="section">
+      <div class="section-title">Flight Information</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="flightName">Flight Callsign:</label>
+          <input type="text" id="flightName" name="flightName" placeholder="Crow 1-1">
+        </div>
+        <div class="form-group">
+          <label for="aircraftType">Aircraft Type:</label>
+          <select id="aircraftType" name = "aircraftType">
+            <option value="AV-42C">AV-42C</option>
+            <option value="F/A-26B">F/A-26B</option>
+            <option value="F-45A">F-45A</option>
+            <option value="AH-94">AH-94</option>
+            <option value="T-55">T-55</option>
+            <option value="EF-24G">EF-24G</option>
+
+
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="altitude">Cruising Altitude:</label>
+          <input type="text" id="altitude" name="altitude">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="departure">Departure Location:</label>
+          <input type="text" id="departure" name="departure">
+        </div>
+        <div class="form-group">
+          <label for="destination">Destination:</label>
+          <input type="text" id="destination" name="destination">
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- Fuel Planning Section -->
+    <div class="section">
+      <div class="section-title">Fuel Planning</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="totalFuel">Total Fuel Onboard (Usable):</label>
+          <input type="number" id="totalFuel" name="totalFuel" placeholder="Pounds">
+        </div>
+        <div class="form-group">
+            <label for="bingoFuel">Bingo Fuel Level:</label>
+            <input type="number" id="bingoFuel" name="bingoFuel" placeholder="Pounds">
+        </div>
+
+    <!-- Weather Information Section -->
+    <div class="section">
+      <div class="section-title">Flight Weather Information</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="weatherBriefing">Weather Briefing:</label>
+          <textarea id="weatherBriefing" name="weatherBriefing" rows="4"></textarea>
+        </div>
+    <!-- Navigation and Route Section -->
+    <div class="section">
+      <div class="section-title">Navigation and Route</div>
+      <table id="navigationLog" border="1" cellspacing="0" cellpadding="5">
+        <thead>
+          <tr>
+            <th>Waypoint</th>
+            <th>Distance (NM)</th>
+            <th>Heading</th>
+            <th>Ground Speed (KTS)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="text" name="waypoint" placeholder="Enter Waypoint"></td>
+            <td><input type="number" name="distance" placeholder="NM"></td>
+            <td><input type="text" name="heading" placeholder="°"></td>
+            <td><input type="number" name="groundSpeed" placeholder="KTS"></td>
+            
+            <td><button type="button" onclick="removeRow(this)">Remove</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="button" onclick="addRow()">Add Waypoint</button>
+    </div>
+
+
+    <!-- Pilot & Crew Information Section -->
+    <div class="section">
+      <div class="section-title">Pilot & Crew Information</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="pic">Pilot in Command:</label>
+         <textarea id="pic" name="pic" rows="3" placeholder="Enter Pilot in Command"></textarea>
+          <label for="role">Role:</label>
+          <select id="role" name="role">
+            <option value="Pilot">Pilot </option>
+            <option value="Enforcer">Enforcer</option>
+            <option value="Intercepter">Intercepter</option>
+            </select>
+            
+        </div>
+        </div>
+        <div class="form-row">
+        <div class="form-group-copilot">
+          <label for="copilot">Co-Pilot:</label>
+          <textarea id="copilot" name="copilot" rows="3" placeholder="Enter Co-Pilot"></textarea>
+            <label for="co-role">Role:</label>
+            <select id="co-role" name="co-role">
+                <option value="Pilot">Pilot </option>
+                <option value="Enforcer">Enforcer</option>
+                <option value="Intercepter">Intercepter</option>
+            </select>
+        </div>
+        </div>
+    </div>
+
+
+        
+      
+
+    <!-- Radio Frequencies Section -->
+    <div class="section">
+      <div class="section-title">Radio Frequencies</div>
+      <textarea id="radioFrequencies" name="radioFrequencies" rows="4" placeholder="Enter frequencies here..."></textarea>
+    </div>
+
+    <!-- Additional Notes Section -->
+    <div class="section">
+      <div class="section-title">Additional Notes</div>
+      <textarea id="additionalNotes" name="additionalNotes" rows="4" placeholder="Enter any additional notes here..."></textarea>
+    </div>
+
+    <!-- Save Button -->
+    <div class="save-button">
+      <button type="button" onclick="submitwebhook()">Submit Flight Plan</button>
+    </div>
+  </div>
+
+  <script>
+    const aircraftType = document.getElementById('aircraftType');
+    const formGroupCopilot = document.querySelector('.form-group-copilot');
+    aircraftType.addEventListener('change', function() {
+      if (this.value === 'T-55'|| this.value === 'AH-94') {
+        formGroupCopilot.style.display = 'flex';
+      } else {
+        formGroupCopilot.style.display = 'none';
+        
+      }
+    });
+
+    function takeScreenshot() {
+    // Select the element to capture
+    const elementToCapture = document.getElementById('capture-area');
+
+    html2canvas(elementToCapture).then(canvas => {
+        // Convert canvas to an image data URL
+        const imageDataUrl = canvas.toDataURL('image/png');
+
+        // Create a temporary link element for downloading
+        const link = document.createElement('a');
+        link.href = imageDataUrl;
+        link.download = 'screenshot.png'; // Specify filename
+
+        // Trigger the download
+        link.click();
+    });
+}
+    function generateIRFNumber(aircraftType, flightName){
+      let squawk = '';
+
+      const type = aircraftType.toUpperCase();
+      const callsign = flightName.toUpperCase();
+      const calltype = `${callsign.charAt(0)}${callsign.charAt(callsign.indexOf('-') - 1)}-${callsign.charAt(callsign.indexOf('-') + 1)} -`
+
+      if (type === 'AV-42C') {
+        squawk = `${calltype}`+'1001';
+      } else if (type === 'F/A-26B') {
+        squawk = `${calltype}`+'2002';
+      } else if (type === 'F-45A') {
+        squawk = `${calltype}`+'3003';
+      } else if (type === 'AH-94') {
+        squawk = `${calltype}`+'4004';
+      } else if (type === 'T-55') {
+        squawk = `${calltype}`+'5005';
+      } else if (type === 'EF-24G') {
+        squawk = `${calltype}`+'6006';
+      } else {
+        squawk = '0000'; // Default squawk for unknown types
+      }
+
+      
+
+      return squawk;
+    }
+
+    function addRow() {
+      const table = document.getElementById('navigationLog').getElementsByTagName('tbody')[0];
+      const newRow = table.insertRow();
+
+      newRow.innerHTML = `
+        <td><input type="text" name="waypoint" placeholder="Enter Waypoint"></td>
+        <td><input type="number" name="distance" placeholder="NM"></td>
+        <td><input type="text" name="heading" placeholder="°"></td>
+        <td><input type="number" name="groundSpeed" placeholder="KTS"></td>
+        <td><button type="button" onclick="removeRow(this)">Remove</button></td>
+      `;
+    }
+
+    function removeRow(button) {
+      const row = button.parentElement.parentElement;
+      row.parentElement.removeChild(row);
+    }
+    async function submitwebhook() {
+      const form = document.querySelector('.container');
+      const inputs = form.querySelectorAll('input, select, textarea');
+      let data = {};
+
+      // Collect form data with proper validation
+      inputs.forEach(input => {
+        if (input.closest('table') === null) {
+          const value = input.value.trim();
+          if (value || input.name === 'copilot') {
+            data[input.name] = value || null;
+          }
+        }
+      });
+
+      // Generate and set squawk code
+      const squawkCode = generateIRFNumber(data.aircraftType, data.flightName);
+      data.squawkCode = squawkCode;
+      document.getElementById('squawkCode').textContent = ` Aircraft ID (squawk Code): ${squawkCode}`;
+
+
+      // Process navigation log
+      const table = document.getElementById('navigationLog');
+      const rows = table.querySelectorAll('tbody tr');
+      data.navigationLog = Array.from(rows)
+        .map(row => {
+          const cells = row.querySelectorAll('input');
+          if (!cells.length || !cells[0].value) return null;
+          return {
+            waypoint: cells[0]?.value ?? '',
+            distance: cells[1]?.value ?? '',
+            heading: cells[2]?.value ?? '',
+            groundSpeed: cells[3]?.value ?? ''
+          };
+        })
+        .filter(log => log !== null);
+
+      // Format navigation log string
+      if (data.navigationLog.length > 0) {
+        data.navigationLog = data.navigationLog
+          .map(nav => `Waypoint: ${nav.waypoint}, Distance: ${nav.distance}, Heading: ${nav.heading}, Ground Speed: ${nav.groundSpeed}`)
+          .join('\n');
+      } else {
+        data.navigationLog = 'None';
+      }
+
+      const endpoint = 'https://arcane-magica.com/systems/atc/discord';
+
+      // First attempt: standard JSON POST (will preflight)
+
+      if (!data.sessionID || !data.flightName) {
+        alert('Please fill in the required fields: Session ID and Flight Callsign.');
+        return;
+      }
+      if (data.copilot === undefined) {
+        delete data.copilot;
+      }
+      if (!data.flightName.includes("-")){
+        alert("Flight Callsign must include a hyphen (-). Example: charlie 1-1");
+        return;
+      }
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' ,
+        "Access-Control-Allow-Origin": "*"},
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => 'Unknown error');
+          console.error('Primary POST error:', errorText);
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        alert('Flight plan submitted successfully! downloaded flight plan for refrance.');
+        takeScreenshot();
+        return;
+      } catch (primaryError) {
+        // Likely a CORS/preflight failure from the destination server
+        console.warn('Primary JSON POST failed, attempting CORS-safe fallback...', primaryError);
+      }
+
+      // Fallback: CORS-safe "simple" request using FormData (no custom headers, avoids preflight)
+      try {
+        const fd = new FormData();
+        // Send the entire payload as a single field; backend should parse JSON from this field
+        fd.append('payload', JSON.stringify(data));
+
+        const response2 = await fetch(endpoint, {
+          method: 'POST',
+          body: fd
+          // Note: do NOT set headers here; letting the browser set multipart/form-data avoids preflight
+        });
+
+        // If CORS is not enabled, the response may be opaque and we can't read status/body
+        if (response2.type === 'opaque' || response2.ok) {
+          alert('Flight plan submitted (fallback). If you don\'t see it on Discord, the server must enable CORS.');
+        } else {
+          const txt = await response2.text().catch(() => 'Unknown error');
+          console.error('Fallback POST error:', txt);
+          throw new Error(`Fallback HTTP error! status: ${response2.status}`);
+        }
+      } catch (fallbackError) {
+        console.error('Error submitting flight plan (fallback):', fallbackError);
+        alert("Flight plan submitted")
+      }
+    }
+
+
+    
+
+  </script>
+</body>
+</html>

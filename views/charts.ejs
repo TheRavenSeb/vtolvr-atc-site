@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="author" content="Caleb Thomas (TheRavenSeb)">
+    <meta name="description" content="Flight Charts - View and select various airport charts.">
+    <meta name="keywords" content="Flight Charts, Airport Charts, Aviation, Flight Planning, Navigation Charts,Vtol vr">
+    <title>Map Charts</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/IDMNYU/p5.js-speech@0.0.3/lib/p5.speech.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            align-self: right;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+            max-height: 100%;
+
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .combined-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+            min-width: 600px;
+            max-width: 1200px;
+            min-height: auto;
+            max-height: 100%;
+            width: 100%;
+        }
+
+        .selector-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .selector-panel h2 {
+            color: #333;
+            font-size: 1.3em;
+            margin: 0;
+        }
+
+        .chart-list {
+            width: 100%;
+        }
+
+        .chart-dropdown {
+            padding: 12px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            width: 100%;
+            max-width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .chart-dropdown:hover {
+            border-color: #667eea;
+            background: #f9f9f9;
+        }
+
+        .chart-dropdown:focus {
+            outline: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .display-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+            max-height: max-content;
+        }
+
+        .display-panel h2 {
+            color: #333;
+            font-size: 1.3em;
+            margin: 0;
+        }
+
+        .chart-display {
+            width: 100%;
+            height: 800px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+        }
+
+        .chart-display img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        .placeholder {
+            color: #999;
+            font-size: 1.1em;
+            text-align: center;
+        }
+
+        footer {
+            color: white;
+            margin-top: 40px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .display-panel {
+                min-width: 100%;
+                max-width: 100%;
+                max-height: 100%;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+        }
+        @media (max-width: 480px) {
+            .chart-btn {
+                font-size: 0.9em;
+                padding: 10px 14px;
+            }
+        }
+
+        @media (max-hight: 600px) {
+            .chart-display {
+                height: 300px;
+            }
+
+
+        }
+
+        .open-window-btn {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+
+        .DiscordButton {
+            background-color: #7289DA; /* Discord Blue */
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Raven's Airport Charts</h1>
+        <p>Select a chart from the list to view it below. You can also use voice commands by saying "Select chart [chart name]".</p>
+        <button  class="open-window-btn" onclick="openSizedWindow()">Open Charts in kneepad configuration</button> <button class="DiscordButton" onclick= "window.location.href='https://discord.gg/FYwbKdxhjY'">Join our Discord</button>
+    </header>
+
+    <div class="container">
+        <div class="selector-panel">
+            <h2>Available Charts</h2>
+            <div class="chart-list">
+                <select id="chartList" class="chart-dropdown">
+                    <option value="">Select a chart...</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="display-panel">
+            <h2>Chart Display</h2>
+            <div class="chart-display" id="chartDisplay">
+                <div class="placeholder">Select a chart to display</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Flight Charts. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const chartList = document.getElementById('chartList');
+        const chartDisplay = document.getElementById('chartDisplay');
+        let charts = [];
+        
+        function openSizedWindow() {
+        // Opens a new window with specified dimensions
+        window.open('http://chart.theravenseb.site/', 'charts', 'width=600,height=1300');
+        }
+
+        // Fetch available chart images from assets folder
+        async function loadCharts() {
+            try {
+                // Common chart image extensions
+                const imageExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
+                const assetPath = './assets/';
+
+                
+                const chartNames = [
+                    "Shark",
+                    "Military",
+                    "Luna",
+                    "Island Air base",
+                ];
+
+                // Try to load each chart image
+                for (const name of chartNames) {
+                    for (const ext of imageExtensions) {
+                        const img = new Image();
+                        const src = assetPath + name + ext;
+
+                        img.onload = function() {
+                            if (!charts.find(c => c.name === name)) {
+                                charts.push({
+                                    name: name.replace(/-/g, ' ').toUpperCase(),
+                                    src: src
+                                });
+                                renderChartList();
+                            }
+                        };
+
+                        img.src = src;
+                    }
+                }
+
+                // Fallback: If no images found, show placeholder
+                setTimeout(() => {
+                    if (charts.length === 0) {
+                        chartList.innerHTML = '<p style="color: #999;">No charts found in assets folder</p>';
+                    }
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error loading charts:', error);
+                chartList.innerHTML = '<p style="color: #999;">Error loading charts</p>';
+            }
+        }
+
+        function renderChartList() {
+            // Clear existing options except the first one
+            while (chartList.options.length > 1) {
+                chartList.remove(1);
+            }
+            
+            // Add chart options to dropdown
+            charts.forEach((chart, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = chart.name;
+                chartList.appendChild(option);
+            });
+        }
+
+        function selectChart(chart) {
+            // Display the chart image
+            chartDisplay.innerHTML = `<img src="${chart.src}" alt="${chart.name}" height="750px">`;
+        }
+        
+        // Handle dropdown change
+        chartList.addEventListener('change', function() {
+            if (this.value !== '') {
+                const chart = charts[this.value];
+                selectChart(chart);
+            }
+        });
+
+
+        // allow for speech to change charts
+        var speech = new p5.SpeechRec();
+        var speak = new p5.Speech(); // speech synthesis object
+        speech.onResult = showResult;
+        speech.start(true, false); // continuous, interimResults
+        
+        
+
+        function showResult() {
+            if (speech.resultValue) {
+                const spokenText = speech.resultString.toLowerCase();
+                console.log('Heard: ' + spokenText);
+                if (spokenText.includes('select chart')) {
+                    var chartName = spokenText.replace('select chart', '').trim();
+                    
+                
+                charts.forEach((chart, index) => {
+                    if (chartName.includes(chart.name.toLowerCase())) {
+                        speak.speak('Loading ' + chart.name + ' chart');
+                        chartList.value = index;
+                        selectChart(chart);
+                    }
+                });
+            }
+            }
+        }
+
+
+       
+        // Initialize
+        loadCharts();
+    </script>
+</body>
+</html>

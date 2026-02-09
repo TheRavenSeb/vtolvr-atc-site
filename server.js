@@ -29,6 +29,20 @@ app.get('/sessions', (req, res) => {
     message: 'Manage your VTOL VR sessions here'
   });
 });
+
+app.get("/ifr", (req, res) => {
+  res.render('ifr', {
+    title: 'IFR',
+    message: 'IFR Flight Planning and Tracking'
+  });
+});
+
+app.get("/charts", (req, res) => {
+  res.render('charts', {
+    title: 'Charts',
+    message: 'VTOL VR Maps and Charts'
+  });
+});
 app.get("/api/sessions", (req, res) => {
  const sessions = fetch("http://172.93.104.139:3000")
   .then(response => response.json())
