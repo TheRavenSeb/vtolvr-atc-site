@@ -1,7 +1,7 @@
 {
   "name": "vtolvr-atc-site",
   "version": "1.0.0",
-  "description": "this webpage is designed to store utility's for VTOL vr atc lobbies.",
+  "description": "this webpage is designed to store utilities for VTOL vr atc lobbies.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
