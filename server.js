@@ -19,7 +19,25 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
   res.render('index', { 
     title: 'VTOL VR ATC Site',
-    message: 'Welcome to the VTOL VR ATC Utilities Site'
+    message: 'Welcome to the VTOL VR ATC  Site'
+  });
+});
+
+app.get('/sessions', (req, res) => {
+  res.render('sessions', { 
+    title: 'Sessions',
+    message: 'Manage your VTOL VR sessions here'
+  });
+});
+app.get("/api/sessions", (req, res) => {
+ const sessions = fetch("http://172.93.104.139:3000")
+  .then(response => response.json())
+  .then(data => {
+    res.json(data);
+  }
+  ).catch(error => {
+    console.error('Error fetching sessions:', error);
+    res.status(500).json({ error: 'Failed to fetch sessions' });
   });
 });
 

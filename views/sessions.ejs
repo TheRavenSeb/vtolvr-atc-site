@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Game Sessions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        .filters {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .filter-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="checkbox"] {
+            cursor: pointer;
+        }
+        button {
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #106ebe;
+        }
+        .sessions-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .session-card {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .session-card h3 {
+            margin-top: 0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 10px;
+        }
+        .badge.public {
+            background-color: #28a745;
+            color: white;
+        }
+        .badge.private {
+            background-color: #dc3545;
+            color: white;
+        }
+        .badge.modded {
+            background-color: #ffc107;
+            color: black;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            background-color: #3d1f1f;
+            color: #ffb3b3;
+            padding: 15px;
+
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Steam Game Sessions</h1>
+    
+    <div class="filters">
+        <div class="filter-group">
+            <div class="filter-item">
+                <input type="checkbox" id="publicFilter" checked>
+                <label for="publicFilter">Public</label>
+            </div>
+            <div class="filter-item">
+                <input type="checkbox" id="privateFilter" checked>
+                <label for="privateFilter">Private</label>
+            </div>
+            <div class="filter-item">
+                <input type="checkbox" id="moddedFilter" checked>
+                <label for="moddedFilter">Modded</label>
+            </div>
+            <button onclick="loadSessions()">Apply Filters</button>
+        </div>
+    </div>
+
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="loading" class="loading" style="display: none;">Loading sessions...</div>
+    <div id="sessions" class="sessions-container"></div>
+
+    <script>
+        let cachedSessions = [];
+
+        async function fetchSessions() {
+            try {
+                const response = await fetch('/api/sessions',
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                if (!response.ok) throw new Error('Failed to fetch sessions');
+                cachedSessions = await response.json();
+            } catch (err) {
+                const error = document.getElementById('error');
+                error.textContent = 'Error loading sessions: ' + err.message;
+                error.style.display = 'block';
+            }
+        }
+
+        function displaySessions() {
+            const error = document.getElementById('error');
+            const sessionsDiv = document.getElementById('sessions');
+            
+            error.style.display = 'none';
+            sessionsDiv.innerHTML = '';
+
+            const publicFilter = document.getElementById('publicFilter').checked;
+            const privateFilter = document.getElementById('privateFilter').checked;
+            const moddedFilter = document.getElementById('moddedFilter').checked;
+
+            let sessions = cachedSessions.filter(session => {
+                const isPublic = !session.IsPrivate;
+                const isPrivate = session.IsPrivate;
+                const isModded = session.IsModded;
+
+                // Check if session type matches filter
+                if (isPrivate && !privateFilter) return false;
+                if (isPublic && !publicFilter) return false;
+                
+                // Check modded status separately - all sessions can be modded regardless of public/private
+                if (isModded && !moddedFilter) return false;
+                
+                return true;
+            });
+
+            if (sessions.length === 0) {
+                sessionsDiv.innerHTML = '<p>No sessions found matching filters.</p>';
+            } else {
+                sessions.forEach(session => {
+                    const card = document.createElement('div');
+                    card.className = 'session-card';
+                    card.innerHTML = `
+                        <h3>${session.LobbyName || 'Unknown'} (${session.LobbyId || 'N/A'})</h3>
+                        ${session.LobbyOwner ? `<p><strong>Host:</strong> ${session.LobbyOwner}</p>` : ''}
+                        ${session.IsPrivate ? '<span class="badge private">Private</span>' : '<span class="badge public">Public</span>'}
+                        ${session.IsModded ? '<span class="badge modded">Modded</span>' : ''}
+                        <p><strong>Players:</strong> ${session.LobbyPlayerCount || 0}</p>
+                        <p><strong>Map:</strong> ${session.LobbyMap || 'N/A'}</p>
+                    `;
+                    sessionsDiv.appendChild(card);
+                });
+            }
+        }
+
+        async function loadSessions() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            
+            await fetchSessions();
+            displaySessions();
+            
+            loading.style.display = 'none';
+        }
+
+        // Initial load
+        loadSessions();
+
+        // Refresh cache every 1 minute
+        setInterval(fetchSessions, 60000);
+
+        // Update display when filters change
+        document.getElementById('publicFilter').addEventListener('change', displaySessions);
+        document.getElementById('privateFilter').addEventListener('change', displaySessions);
+        document.getElementById('moddedFilter').addEventListener('change', displaySessions);
+    </script>
+</body>
+</html>
