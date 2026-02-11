@@ -45,7 +45,7 @@ app.get("/charts", (req, res) => {
   });
 });
 app.get("/api/sessions", (req, res) => {
- const sessions = fetch("http://172.93.104.139:3000")
+ const sessions = fetch(process.env.SESSIONS_API_URL)
   .then(response => response.json())
   .then(data => {
     res.json(data);
