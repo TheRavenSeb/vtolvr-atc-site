@@ -61,16 +61,22 @@ app.get("/api/sessions", (req, res) => {
 app.post('/api/ifr/submit', async function(req,res){
 
 const data= req.body
+var title = "Flight Plan for " + data.flightName
 console.log(data)
 if(data.data !=null && data.data != undefined){
 
   data = data.data
   console.log(data)
 }
+if (data.navigationLog === undefined || data.navigationLog === null || data.navigationLog === 'None') {
+  title += " VFR";
+}
+
+
   const embedBody = {
         content: '<@&1459722493685141636> incoming ATC Flight Plan', // Empty content field
         "embeds": [{
-            title: 'Flight Plan',
+            title: title,
             description: `Here is the flight plan for callsign ${data.flightName || '(Not specified)'}|| Flight ID: ${data.squawkCode}`,
             color: 0xFFA500,
             fields: [

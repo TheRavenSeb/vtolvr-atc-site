@@ -446,6 +446,10 @@
       if (data.copilot === undefined) {
         delete data.copilot;
       }
+      if (data.copilot === '') {
+        delete data.copilot;
+      }
+      
       if (!data.flightName.includes("-")){
         alert("Flight Callsign must include a hyphen (-). Example: charlie 1-1");
         return;
