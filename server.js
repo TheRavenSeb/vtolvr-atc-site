@@ -70,14 +70,16 @@ if(data.data !=null && data.data != undefined){
 }
 if (data.navigationLog === undefined || data.navigationLog === null || data.navigationLog === 'None') {
   title += " VFR";
+}else {
+  title += " IFR";
 }
 
 
   const embedBody = {
-        content: '<@&1459722493685141636> incoming ATC Flight Plan', // Empty content field
+        content: '<@!1462576475403190282> incoming ATC Flight Plan', // Empty content field
         "embeds": [{
             title: title,
-            description: `Here is the flight plan for callsign ${data.flightName || '(Not specified)'}|| Flight ID: ${data.squawkCode}`,
+            description: `Here is the flight plan for callsign ${data.flightName || '(Not specified)'} || Flight ID: ${data.squawkCode}`,
             color: 0xFFA500,
             fields: [
                 { name: 'SessionID', value: data.sessionID || '(Not specified)' },
