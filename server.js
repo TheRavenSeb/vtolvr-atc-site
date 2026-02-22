@@ -37,6 +37,9 @@ app.get("/ifr", (req, res) => {
     message: 'IFR Flight Planning and Tracking'
   });
 });
+app.get("/discord", (req, res) => {
+  res.redirect("https://discord.gg/F3rh3FZ8cs");
+});
 
 app.get("/charts", (req, res) => {
   res.render('charts', {
