@@ -18,28 +18,28 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
-      background-color: #f4f4f9;
+      background-color: #1e1e1e;
+      color: #e0e0e0;
     }
 
     .container {
       max-width: 1000px;
       margin: auto;
-      background: white;
+      background: #2d2d2d;
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     /*!SECTION: Squawk Code Styling is placed in the title as a <span> on the right side of the title */
     .squawk-code { 
       float: right;
       font-size: 0.9rem;
-      color: #007bff;
+      color: #0078d4;
     }
 
     h1 {
       text-align: center;
-      color: #333;
+      color: #e0e0e0;
       margin-bottom: 20px;
       font-size: 1.8rem;
     }
@@ -51,9 +51,10 @@
     .section-title {
       font-weight: bold;
       font-size: 1.2rem;
-      border-bottom: 2px solid #007bff;
+      border-bottom: 2px solid #0078d4;
       margin-bottom: 10px;
       padding-bottom: 5px;
+      color: #e0e0e0;
     }
 
     .form-row {
@@ -83,16 +84,22 @@
       font-weight: bold;
       display: block;
       margin-bottom: 5px;
+      color: #e0e0e0;
     }
 
     input, textarea {
       width: 100%;
       padding: 8px;
-      border: 1px solid #ccc;
+      border: 1px solid #444;
       border-radius: 5px;
       box-sizing: border-box;
+      background-color: #3a3a3a;
+      color: #e0e0e0;
     }
 
+    input::placeholder, textarea::placeholder {
+      color: #999;
+    }
 
     textarea {
       resize: none;
@@ -100,12 +107,17 @@
     select {
       width: 100%;
       padding: 8px;
-      border: 1px solid #ccc;
+      border: 1px solid #444;
       border-radius: 5px;
       box-sizing: border-box;
+      background-color: #3a3a3a;
+      color: #e0e0e0;
     }
 
-    
+    select option {
+      background-color: #3a3a3a;
+      color: #e0e0e0;
+    }
 
     table {
       width: 100%;
@@ -117,31 +129,43 @@
     th, td {
       text-align: left;
       padding: 10px;
+      border: 1px solid #444;
     }
 
     th {
-      background-color: #007bff;
+      background-color: #0078d4;
       color: white;
+    }
+
+    tr {
+      background-color: #2d2d2d;
+    }
+
+    tr:hover {
+      background-color: #3a3a3a;
     }
 
     td input {
       width: 100%;
       padding: 5px;
-      border: 1px solid #ccc;
+      border: 1px solid #444;
       border-radius: 3px;
+      background-color: #3a3a3a;
+      color: #e0e0e0;
     }
 
     button {
-      background: #007bff;
+      background-color: #0078d4;
       color: white;
-      padding: 5px 10px;
+      padding: 8px 16px;
       border: none;
-      border-radius: 3px;
+      border-radius: 4px;
       cursor: pointer;
+      font-size: 14px;
     }
 
     button:hover {
-      background: #0056b3;
+      background-color: #106ebe;
     }
 
     .save-button {
