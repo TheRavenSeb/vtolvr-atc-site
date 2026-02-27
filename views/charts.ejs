@@ -16,9 +16,14 @@
                     'GraphicsTabletInfo',
                     2025012901);
                 var info = await OpenKneeboard.GetGraphicsTabletInfo();
+                if (info && info.SuggestedPixelSize) {
                 await OpenKneeboard.SetPreferredPixelSize(
                 info.SuggestedPixelSize.Width,
-                info.SuggestedPixelSize.Height)
+                info.SuggestedPixelSize.Height)}
+                else{
+                    // set to 600x1300 if no suggested size is provided
+                    await OpenKneeboard.SetPreferredPixelSize(600, 1300);
+                }
             }
             
 
