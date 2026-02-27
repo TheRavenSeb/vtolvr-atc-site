@@ -371,7 +371,11 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // Set initial window size for kneepad configuration
-            openSizedWindow();
+            //grab the weidth and height of the window from the url parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const width = urlParams.get('width') || 600;
+            const height = urlParams.get('height') || 1300;
+            window.resizeTo(width, height);
         });
     </script>
 </body>
