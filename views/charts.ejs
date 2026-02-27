@@ -18,8 +18,9 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -29,7 +30,7 @@
 
         header {
             text-align: center;
-            color: white;
+            color: #e0e0e0;
             margin-bottom: 40px;
             padding-top: 20px;
         }
@@ -37,8 +38,6 @@
         header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            align-self: right;
         }
 
         header p {
@@ -58,7 +57,7 @@
         }
 
         .combined-panel {
-            background: white;
+            background: #333;
             border-radius: 12px;
             padding: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -81,7 +80,7 @@
         }
 
         .selector-panel h2 {
-            color: #333;
+            color: #e0e0e0;
             font-size: 1.3em;
             margin: 0;
         }
@@ -93,8 +92,8 @@
         .chart-dropdown {
             padding: 12px 16px;
             border: 2px solid #667eea;
-            background: white;
-            color: #333;
+            background: #333;
+            color: #e0e0e0;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1em;
@@ -106,7 +105,7 @@
 
         .chart-dropdown:hover {
             border-color: #667eea;
-            background: #f9f9f9;
+            background: #333;
         }
 
         .chart-dropdown:focus {
@@ -123,7 +122,7 @@
         }
 
         .display-panel h2 {
-            color: #333;
+            color: #e0e0e0  ;
             font-size: 1.3em;
             margin: 0;
         }
@@ -131,7 +130,7 @@
         .chart-display {
             width: 100%;
             height: 800px;
-            background: #f5f5f5;
+            background: #5a5a5a;
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -271,6 +270,7 @@
                     "Military",
                     "Luna",
                     "Island Air base",
+                    "Manchester Airport",
                 ];
 
                 // Try to load each chart image
