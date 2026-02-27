@@ -106,6 +106,9 @@
 
         .chart-list {
             width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .chart-buttons-container {
@@ -259,8 +262,12 @@
         <div class="selector-panel">
             <h2>Available Charts</h2>
             <div class="chart-list">
-                <select id="chartList" class="chart-dropdown">
-                    <option value="">Select a chart...</option>
+                <div class="chart-buttons-container">
+                    <!-- Chart buttons will be dynamically added here -->
+                </div>
+                <select id="chartList" style="margin-top: 20px; padding: 10px; border-radius: 8px; background: #333; color: #e0e0e0; border: 2px solid #667eea;">
+                    <option value="">Select a chart</option>
+                    <!-- Chart options will be dynamically added here -->
                 </select>
             </div>
         </div>
@@ -339,11 +346,23 @@
         }
 
         function renderChartList() {
-            // Clear existing options except the first one
-            while (chartList.options.length > 1) {
-                chartList.remove(1);
-            }
             
+            const container = document.querySelector('.chart-buttons-container');
+            if (container) {
+                while (container.children.length > 0) {
+                    container.removeChild(container.lastChild);
+                }
+            }
+
+            // Add chart buttons
+            charts.forEach((chart, index) => {
+                const button = document.createElement('button');
+                button.className = 'chart-btn';
+                button.textContent = chart.name;
+                button.dataset.index = index;
+                button.addEventListener('click', () => selectChart(chart));
+                container.appendChild(button);
+            });
             // Add chart options to dropdown
             charts.forEach((chart, index) => {
                 const option = document.createElement('option');
@@ -355,6 +374,7 @@
 
         function selectChart(chart) {
             // Display the chart image
+
             chartDisplay.innerHTML = `<img src="${chart.src}" alt="${chart.name}" height="750px">`;
         }
         
