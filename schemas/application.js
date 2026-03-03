@@ -25,6 +25,11 @@ const schema = new mongoose.Schema({
   discordHandle: {
     type: String,
     required: function() { return this.type === 'Enforcer'; }
+  },
+  discordId: {
+    type: String,
+    required: true
   }
+
 });
 module.exports = mongoose.model('application', schema);

@@ -159,15 +159,24 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
       if (!data.discordHandle) {
         return res.status(400).json({ error: 'Discord handle is required for Enforcer applications' });
       }
-    } else {
+    } else if(data.discordId === undefined || data.discordId === null){
+      return res.status(400).json({ error: 'Discord ID is required for all applications' });
+    }
+    
+    else {
       return res.status(400).json({ error: 'Invalid application type' });
     }
 
     const applicationData = {
-      name: data.name,
-      type: data.type,
+      
+      username: data.Username,
+      discord: data.discord,
       callsign: data.callsign || null,
-      discordHandle: data.discordHandle || null
+      experience: data.experience,
+      whyJoin: data.whyJoin,
+      submittedAt: data.submittedAt,
+      type: data.type,
+      discordId: data.discordId
     };
 
     try {
@@ -206,6 +215,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
       }
       application.status = 'approved';
       await application.save();
+      sendDM(application.discordId, `Congratulations ${application.name}! Your application for the ${application.type} position has been approved. We will be in touch with you soon regarding the next steps. Welcome to the team!`);
       res.json({ message: 'Application approved successfully' });
     } catch (error) {
       console.error('Error approving application:', error);
@@ -221,6 +231,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
       }
       application.status = 'rejected';
       await application.save();
+      sendDM(application.discordId, `Hello ${application.name}, we regret to inform you that your application for the ${application.type} position has been rejected. Thank you for your interest and we encourage you to apply again in the future.`);
       res.json({ message: 'Application rejected successfully' });
     } catch (error) {
       console.error('Error rejecting application:', error);
@@ -228,6 +239,29 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
     }
   });
 
+function sendDM(userId, message) {
+  return fetch(`${process.env.SESSIONS_API_URL}/api/send/dm`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ userId, message })
+  })
+  .then(response => {
+    if (!response.ok) {
+      return response.text().then(errorText => {
+        console.error('Error:', errorText);
+        throw new Error('Failed to send DM');
+
+      });
+    }
+    return response.json();
+  })
+  .catch(error => {
+    console.error('Error sending DM:', error);
+    throw error;
+  });
+}
 
   app.get("/test", async (req, res) => {
     res.render('test', {
@@ -235,25 +269,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
       message: 'This is a test page'
     });
   });
-  app.post("/api/send/dm", async (req, res) => {
-    const { userId, message } = req.body;
-
- const response = await fetch(`${process.env.SESSIONS_API_URL}/api/send/dm`, {
-                    method: 'POST',
-                   
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ userId, message })
-                });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error:', errorText);
-        return res.status(500).json({ error: 'Failed to send DM' });
-    }
-    res.json({ message: 'DM sent successfully' });
-  });
+  
 
 
     
