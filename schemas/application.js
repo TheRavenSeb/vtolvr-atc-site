@@ -32,13 +32,13 @@ const schema = new mongoose.Schema({
   },
   experience: {
     type: String,
-    required: function() { return this.type === 'ATC'; }
+   
   },
   whyJoin: {
     type: String,
-    required: function() { return this.type === 'Enforcer'; }
-  }
     
+  }
+  
 
 });
 module.exports = mongoose.model('application', schema);
