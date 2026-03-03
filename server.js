@@ -181,9 +181,16 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
 
     try {
       
-      const application = new Application(applicationData);
-      await application.save();
-      res.json({ message: 'Application submitted successfully' });
+      Application.create(applicationData).then(application => {
+        console.log('Application submitted:', application);
+        res.json({ message: 'Application submitted successfully' });
+      }).catch(error => {
+        console.error('Error creating application:', error);
+        res.status(500).json({ error: 'Failed to submit application' });
+        throw error;
+      });
+      
+      
     }
       catch (error) {
         console.error('Error submitting application:', error);
