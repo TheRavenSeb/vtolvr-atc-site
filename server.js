@@ -9,6 +9,8 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use("/assets", express.static(path.join(__dirname, 'assets')));
+app.use("/scripts", express.static(path.join(__dirname, 'scripts')));
+app.use("/styles", express.static(path.join(__dirname, 'css')));
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 

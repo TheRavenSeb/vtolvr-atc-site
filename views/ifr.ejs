@@ -11,6 +11,29 @@
   <meta name="author" content="Caleb Thomas">
   <!-- Include html2canvas library for screenshot functionality -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+   <script>
+        document.addEventListener('DOMContentLoaded', async() => {
+            if (window.OpenKneeboard) {
+                document.body.classList.add("OpenKneeboard");
+                await OpenKneeboard.EnableExperimentalFeature(
+                    'GraphicsTabletInfo',
+                    2025012901);
+                var info = await OpenKneeboard.GetGraphicsTabletInfo();
+                if (info && info.SuggestedPixelSize) {
+                await OpenKneeboard.SetPreferredPixelSize(
+                info.SuggestedPixelSize.Width,
+                info.SuggestedPixelSize.Height)}
+                else{
+                    // set to 600x1300 if no suggested size is provided
+                    await OpenKneeboard.SetPreferredPixelSize(600, 1300);
+                }
+            }
+            
+
+
+            
+        });
+    </script>
 
   <title>VFR Flight Planning Sheet</title>
   <style>
@@ -196,7 +219,7 @@
         </div>
         <div class="form-group">
           <label for="sessionMap">Session Map:</label>
-          <input type="text" id="sessionMap" name="sessionMap" placeholder="GFA Forest">
+          <input type="text" id="sessionMap" name="sessionMap" placeholder="ARN City">
         </div>
         </div>
     <!-- Flight Information Section -->
@@ -257,7 +280,7 @@
       <div class="form-row">
         <div class="form-group">
           <label for="weatherBriefing">Weather Briefing:</label>
-          <textarea id="weatherBriefing" name="weatherBriefing" rows="4"></textarea>
+          <textarea id="weatherBriefing" name="weatherBriefing" rows="4" placeholder="Clear skies, visibility 10 miles"></textarea>
         </div>
     <!-- Navigation and Route Section -->
     <div class="section">
