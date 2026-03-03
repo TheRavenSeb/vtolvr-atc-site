@@ -319,13 +319,13 @@
 <body>
     <div class="sidebar">
         <div class="sidebar-logo"><img src="/assets/logo.png" alt="Logo"></div>
-        <div class="sidebar-title"><a href="#">Aviation Realism<br>Network</a></div>
+        <div class="sidebar-title"><a href="/">Aviation Realism<br>Network</a></div>
         <div class="sidebar-menu">
-            <a class="sidebar-menu-item" href="#">Profile</a>
-            <a class="sidebar-menu-item" href="#">Announcements</a>
-            <a class="sidebar-menu-item" href="#">Pilots</a>
-            <a class="sidebar-menu-item active" href="#">Applications</a>
-            <a class="sidebar-menu-item" href="#">Information</a>
+            <a class="sidebar-menu-item" href="/profile">Profile</a>
+            <a class="sidebar-menu-item" href="/announcements">Announcements</a>
+            <a class="sidebar-menu-item" href="/pilots">Pilots</a>
+            <a class="sidebar-menu-item active" href="/applications">Applications</a>
+            <a class="sidebar-menu-item" href="/information">Information</a>
         </div>
     </div>
 
@@ -389,7 +389,7 @@
         }
 
         // Fetch applications from API
-        fetch('/applications')
+        fetch('/api/applications')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('API response was not ok: ' + response.status);
