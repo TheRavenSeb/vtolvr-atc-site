@@ -465,7 +465,7 @@
                         <span class="applicant-name">${app.name}</span>
                         <span class="application-status status-${app.status}">${app.status.toUpperCase()}</span>
                     </div>
-                    <div class="application-position">${type === 'ATC' ? 'Callsign: ' + app.callsign : 'Discord: ' + app.discordHandle}</div>
+                    <div class="application-position">${'Callsign: ' + app.callsign + ' | Discord: ' + app.discordHandle}</div>
                     <div class="application-date">Applied: ${new Date(app.date).toLocaleDateString()}</div>
                     <div class="application-actions">
                         <button class="action-btn view-btn" onclick="openApplicationModal('${app._id || app.id}')">View Full</button>
@@ -496,8 +496,28 @@
                     <div class="answer">${application.name}</div>
                 </div>
                 <div class="question-answer">
-                    <div class="question">${application.type === 'atc' ? 'Callsign' : 'Discord Handle'}:</div>
-                    <div class="answer">${application.type === 'atc' ? application.callsign : application.discordHandle}</div>
+                    <div class="question">Callsign / Discord Handle:</div>
+                    <div class="answer">${application.callsign} / ${application.discordHandle}</div>
+                </div>
+                <div class="question-answer">
+                    <div class="question">Application Type:</div>
+                    <div class="answer">${application.type.toUpperCase()}</div>
+                </div>
+                <div class="question-answer">
+                    <div class="question">Status:</div>
+                    <div class="answer">${application.status.toUpperCase()}</div>
+                </div>
+                <div class="question-answer">
+                    <div class="question">Applied On:</div>
+                    <div class="answer">${new Date(application.date).toLocaleString()}</div>
+                </div>
+                <div class="question-answer">
+                    <div class="question">Experience:</div>
+                    <div class="answer">${application.experience || 'N/A'}</div>
+                </div>
+                <div class="question-answer">
+                    <div class="question">Why do you want to join?</div>
+                    <div class="answer">${application.reason || 'N/A'}</div>
                 </div>
             `;
 
