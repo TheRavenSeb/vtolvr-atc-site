@@ -197,18 +197,19 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
         res.status(500).json({ error: 'Failed to submit application' });
       }
   });
-
-  app.get("/applications", async (req, res) => {
+app.get ("/applications", (req, res) => {
+  res.render('application', {
+    title: 'Application',
+    message: 'Apply to become an ATC or Enforcer'
+  });
+});
+  app.get("/api/applications", async (req, res) => {
     try {
-      const applications = await Application.find().sort({ date: -1 });
-      res.render('applications', {
-        title: 'Applications',
-        message: 'View and manage applications',
-        applications: applications
-      });
+      const applications = await Application.find();
+      res.json({ data: applications });
     } catch (error) {
       console.error('Error fetching applications:', error);
-      res.status(500).send('Failed to fetch applications');
+      res.status(500).json({ error: 'Failed to fetch applications' });
     }
   });
 
