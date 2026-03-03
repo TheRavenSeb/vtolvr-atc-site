@@ -23,6 +23,8 @@
   "dependencies": {
     "dotenv": "^17.2.4",
     "ejs": "^4.0.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "grapesjs": "^0.22.14",
+    "grapesjs-ai-agent": "^1.0.11"
   }
 }

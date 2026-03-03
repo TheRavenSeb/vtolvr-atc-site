@@ -132,6 +132,12 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
   
   
   })
+  app.get("/builder", (req, res) => {
+    res.render('builder', {
+      title: 'Builder',
+      message: 'GrapesJS Builder'
+    });
+  });
 
 // Start the server
 app.listen(PORT, () => {
