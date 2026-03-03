@@ -389,17 +389,26 @@
         }
 
         // Fetch applications from API
-        fetch('/api/applications')
-            .then(response => response.json())
+        fetch('/applications')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
             .then(result => {
-                const applications = result.data || [];
+                console.log('Applications fetched:', result);
+                const applications = result.data || result || [];
                 const atcApplications = applications.filter(app => app.type === 'ATC');
                 const enforcerApplications = applications.filter(app => app.type === 'Enforcer');
                 
                 renderApplications(atcApplications, 'atcList', 'ATC');
                 renderApplications(enforcerApplications, 'enforcerList', 'Enforcer');
             })
-            .catch(error => console.error('Error fetching applications:', error));
+            .catch(error => {
+                console.error('Error fetching applications:', error);
+                alert('Failed to load applications: ' + error.message);
+            });
     </script>
 </body>
 </html>
