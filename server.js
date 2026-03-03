@@ -235,6 +235,26 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
       message: 'This is a test page'
     });
   });
+  app.post("/api/send/dm", async (req, res) => {
+    const { userId, message } = req.body;
+
+ const response = await fetch(`${process.env.SESSIONS_API_URL}/api/send/dm`, {
+                    method: 'POST',
+                   
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error:', errorText);
+        return res.status(500).json({ error: 'Failed to send DM' });
+    }
+    res.json({ message: 'DM sent successfully' });
+  });
+
 
     
       
