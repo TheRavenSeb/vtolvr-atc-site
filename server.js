@@ -149,7 +149,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
 
   app.post("/api/applications/submit", async (req, res) => {
     const data = req.body;
-
+    console.log('Received application data:', data);
     // check if application is for ATC or Enforcer and validate required fields make a new application object based on the schema
     if (data.type === 'ATC') {
       if (!data.callsign) {
@@ -179,7 +179,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
         discordId: data.discordId,
         experience: data.experience,
         whyJoin: data.whyJoin
-        
+
 
       }).then(application => {
         console.log('Application submitted:', application);
