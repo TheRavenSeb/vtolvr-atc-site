@@ -392,6 +392,31 @@
             border-left: 3px solid #667eea;
             border-radius: 4px;
         }
+
+        .search-container {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            background-color: #2a2a2a;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+
+        .search-input::placeholder {
+            color: #888;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #7f9eff;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -416,6 +441,9 @@
         <div class="container">
             <div class="applications-panel">
                 <h2>ATC Applications</h2>
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by name, callsign, or Discord handle..." onkeyup="filterApplications()">
+                </div>
                 <div class="application-list" id="atcList">
                     <div class="empty-state">
                         <p>No ATC applications at this time.</p>
@@ -450,6 +478,27 @@
 
     <script>
         let allApplications = [];
+        let filteredApplications = [];
+
+        function filterApplications() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filteredApplications = allApplications;
+            } else {
+                filteredApplications = allApplications.filter(app => {
+                    return app.name.toLowerCase().includes(searchTerm) ||
+                           app.callsign.toLowerCase().includes(searchTerm) ||
+                           app.discordHandle.toLowerCase().includes(searchTerm);
+                });
+            }
+            
+            const atcApplications = filteredApplications.filter(app => app.type === 'atc');
+            const enforcerApplications = filteredApplications.filter(app => app.type === 'enforcer');
+            
+            renderApplications(atcApplications, 'atcList', 'ATC');
+            renderApplications(enforcerApplications, 'enforcerList', 'Enforcer');
+        }
 
         function renderApplications(applications, containerId, type) {
             const container = document.getElementById(containerId);
@@ -604,6 +653,7 @@
             .then(result => {
                 console.log('Applications fetched:', result);
                 allApplications = result.data || result || [];
+                filteredApplications = allApplications;
                 const atcApplications = allApplications.filter(app => app.type === 'atc');
                 const enforcerApplications = allApplications.filter(app => app.type === 'enforcer');
                 
