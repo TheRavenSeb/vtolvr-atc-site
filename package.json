@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/TheRavenSeb/vtolvr-atc-site#readme",
   "dependencies": {
+    "@grapesjs/studio-sdk": "^1.0.58",
+    "@grapesjs/studio-sdk-plugins": "^1.0.34",
     "dotenv": "^17.2.4",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
