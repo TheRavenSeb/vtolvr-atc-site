@@ -22,7 +22,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Parse JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use
+
+// Session middleware
+const session = require('express-session');
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false, httpOnly: true }
+}));
 
 // Routes
 app.get('/', (req, res) => {
