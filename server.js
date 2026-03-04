@@ -565,7 +565,7 @@ app.get("/api/admin/users", authHandler.AdminOnly, async (req, res) => {
   
 });
 
-app.get("/api//users", async (req, res) => {
+app.get("/api/users", async (req, res) => {
   try {
     const users = await Users.find();
     var userList = []
