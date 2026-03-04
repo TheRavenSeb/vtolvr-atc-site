@@ -372,6 +372,23 @@
             cursor: pointer;
             border-radius: 12px;
         }
+
+        .sidebar-login-btn {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            margin-top: auto;
+            transition: all 0.2s;
+        }
+
+        .sidebar-login-btn:hover {
+            background-color: #5569d8;
+        }
     </style>
 </head>
 <body>
@@ -392,6 +409,7 @@
                 <!-- Chart buttons will be dynamically added here -->
             </div>
         </div>
+        <a href="/logout" class="sidebar-login-btn">Logout</a>
     </div>
 
     <div class="main-content">
