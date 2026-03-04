@@ -433,6 +433,31 @@ app.post("/api/auth/login", async (req, res) => {
 }
  
 });
+
+app.get("/login", (req, res) => {
+  res.render('auth/login', {
+    title: 'Login',
+    message: 'Login to your account'
+   });
+});
+
+app.get("/logout", (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error('Error during logout:', err);
+      return res.status(500).json({ error: 'Failed to logout' });
+    }
+    res.redirect('/');
+
+  });});
+
+  app.get("/register", (req, res) => {
+    res.render('auth/register', {
+      title: 'Register',
+      message: 'Create a new account'
+     });
+   });
+
     
       
 

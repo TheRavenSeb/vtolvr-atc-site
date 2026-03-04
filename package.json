@@ -30,6 +30,7 @@
     "grapesjs-ai-agent": "^1.0.11",
     "grapesjs-custom-code": "^1.0.2",
     "grapesjs-table": "^1.0.8",
-    "mongoose": "^9.2.3"
+    "mongoose": "^9.2.3",
+    "pbkdf2-password": "^1.2.1"
   }
 }
