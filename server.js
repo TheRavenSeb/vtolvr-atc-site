@@ -3,6 +3,7 @@ const path = require('path');
 require('dotenv').config();
 const Mongo = require('./functions/MongoHandler');
 const Application = require('./schemas/application');
+const authHandler = require('./functions/AuthHandler');
 const { render } = require('ejs');
 
 
@@ -21,6 +22,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Parse JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use
 
 // Routes
 app.get('/', (req, res) => {
@@ -234,7 +236,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
   });
 
 
-app.get("/applications/admin", (req, res) => {
+app.get("/applications/admin", authHandler.AdminOnly, (req, res) => {
   res.render('application-admin', {
     title: 'Admin Applications',
     message: 'Review and manage applications here'
@@ -389,7 +391,48 @@ function sendDM(userId, message) {
   });
   
 
+//auth endpoints
+app.post("/api/auth/register", async (req, res) => {
+  const { username, password, email, role } = req.body;
+  try{
+  const result = await authHandler.register(username, password, email, role);
+  if (typeof result === 'string') {
+    res.status(400).json({ error: result });
+  } else {
+    res.json({ message: 'User registered successfully', user: result });  
+  }
+}catch(err){
+  console.error('Error registering user:', err);
+  res.status(500).json({ error: 'Failed to register user' });
+}
+});
 
+app.post("/api/auth/login", async (req, res) => {
+  const { username, password } = req.body;
+  try{
+ await authHandler.login(username, password, function(err, user){
+  
+    if (err) {
+      console.error('Error during login:', err);
+      return res.status(500).json({ error: 'Failed to login' });
+    }
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+    // Set user session
+    req.session.user = {
+      id: user._id,
+      username: user.Username,
+      role: user.Role
+    };
+    res.json({ message: 'Login successful', user: req.session.user });
+  })
+}catch(err){
+  console.error('Error during login:', err);
+  res.status(500).json({ error: 'Failed to login' });
+}
+ 
+});
     
       
 
