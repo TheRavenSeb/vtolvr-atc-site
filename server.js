@@ -567,7 +567,8 @@ app.get("/api/admin/users", authHandler.AdminOnly, async (req, res) => {
 app.get("/pilots", (req, res) => {
   res.render('pilots', {
     title: 'Pilots',
-    message: 'View all registered pilots here'
+    message: 'View all registered pilots here',
+    user: req.session.user
   });
 })
 
