@@ -3,6 +3,7 @@ const path = require('path');
 require('dotenv').config();
 const Mongo = require('./functions/MongoHandler');
 const Application = require('./schemas/application');
+const Users = require('./schemas/users');
 const authHandler = require('./functions/AuthHandler');
 const { render } = require('ejs');
 
@@ -245,7 +246,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
 
 
 app.get("/applications/admin", authHandler.AdminOnly, (req, res) => {
-  res.render('application-admin', {
+  res.render('admin/application-admin', {
     title: 'Admin Applications',
     message: 'Review and manage applications here'
   });
@@ -397,6 +398,97 @@ function sendDM(userId, message) {
       message: 'This is a test page'
     });
   });
+
+
+
+
+
+//admin routes
+
+app.get("/admin", authHandler.AdminOnly, (req, res) => {
+  res.render('admin/panel-admin', {
+    title: 'Admin Dashboard',
+    message: 'Welcome to the admin dashboard'
+  });});
+
+app.get("/api/admin/users", authHandler.AdminOnly, async (req, res) => {
+  try {
+    const users = await Users.find();
+    res.json({ data: users });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+  
+});
+
+//!SECTION Endpoint for updating a user's role
+app.post("/api/admin/users/:id/updateRole", authHandler.AdminOnly, async (req, res) => {
+  const userId = req.params.id;
+  const { role } = req.body;
+  if (!['admin', 'atc', 'enforcer', 'user', 'mod'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid role specified' });
+  }
+  try {
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (user.Role.includes(role)) {
+      return res.status(400).json({ error: 'User already has this role' });
+    }
+    user.Role.push(role);
+    await user.save();
+    res.json({ message: 'User role updated successfully' });
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ error: 'Failed to update user role' });
+  }
+});
+
+//!SECTION Endpoint for removing a role from a user
+app.post("/api/admin/users/:id/removeRole", authHandler.AdminOnly, async (req, res) => {
+  const userId = req.params.id;
+  const { role } = req.body;
+  if (!['admin', 'atc', 'enforcer', 'user', 'mod'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid role specified' });
+  }
+  try {
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (!user.Role.includes(role)) {
+      return res.status(400).json({ error: 'User does not have this role' });
+    }
+    user.Role = user.Role.filter(r => r !== role);
+    await user.save();
+    res.json({ message: 'User role removed successfully' });
+  } catch (error) {
+    console.error('Error removing user role:', error);
+    res.status(500).json({ error: 'Failed to remove user role' });
+  }
+});
+
+
+app.post("/api/admin/users/:id/updateFlighthours", authHandler.AdminOnly, async (req, res) => {
+  const userId = req.params.id;
+  const { flighthours } = req.body;
+  if (isNaN(flighthours) || flighthours < 0) {
+    return res.status(400).json({ error: 'Invalid flighthours specified' });
+  }
+  try {
+    const user = await Users.findById(userId);
+    if (!user) { return res.status(404).json({ error: 'User not found' }); }
+    
+    user.Flighthours = flighthours;
+    await user.save();
+    res.json({ message: 'User flighthours updated successfully' });
+  } catch (error) {
+    console.error('Error updating user flighthours:', error);
+    res.status(500).json({ error: 'Failed to update user flighthours' });
+  }
+});
   
 
 //auth endpoints

@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="author" content="Caleb Thomas (TheRavenSeb)">
+    <meta name="description" content="Admin Panel - Manage members, roles, and flight hours.">
+    <meta name="keywords" content="Admin, Members, Roles, Flight Hours, Aviation, Discord, Vtol VR">
+    <title>Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: row;
+            padding: 0;
+            margin: 0;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #2a2a2a;
+            border-right: 1px solid #444;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            width: 120px;
+            height: 120px;
+            background-color: #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: #2a2a2a;
+        }
+
+        .sidebar-logo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .sidebar-title {
+            text-align: center;
+            color: #e0e0e0;
+            font-size: 1.3em;
+            font-weight: bold;
+            line-height: 1.3;
+        }
+
+        .sidebar-title a {
+            color: #e0e0e0;
+            text-decoration: none;
+        }
+
+        .sidebar-title a:hover {
+            color: #667eea;
+        }
+
+        .sidebar-menu {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .sidebar-menu-item {
+            padding: 12px 16px;
+            color: #b0b0b0;
+            text-decoration: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 0.95em;
+        }
+
+        .sidebar-menu-item:hover {
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .sidebar-menu-item.active {
+            background-color: #667eea;
+            color: #ffffff;
+        }
+
+        header {
+            text-align: center;
+            color: #e0e0e0;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .admin-panel {
+            background: #333;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .panel-header h2 {
+            color: #e0e0e0;
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        .search-container {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            background-color: #2a2a2a;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+
+        .search-input::placeholder {
+            color: #888;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #7f9eff;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .members-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .member-item {
+            background: #2a2a2a;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .member-item:hover {
+            background: #3a3a3a;
+        }
+
+        .member-info {
+            flex: 1;
+        }
+
+        .member-name {
+            color: #e0e0e0;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .member-details {
+            color: #b0b0b0;
+            font-size: 0.95em;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .detail-item {
+            display: flex;
+            gap: 8px;
+        }
+
+        .detail-label {
+            color: #888;
+            font-weight: bold;
+        }
+
+        .member-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            min-width: 300px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .edit-btn {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #5568d3;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #888;
+            padding: 40px 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #2a2a2a;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: #e0e0e0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #e0e0e0;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            border: 1px solid #667eea;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #7f9eff;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-input::placeholder {
+            color: #888;
+        }
+
+        .role-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .role-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
+        .role-name {
+            color: #e0e0e0;
+            font-weight: bold;
+        }
+
+        .remove-role-btn {
+            background-color: #f44336;
+            color: white;
+            padding: 4px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .remove-role-btn:hover {
+            background-color: #da190b;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-primary {
+            flex: 1;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 12px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #666;
+        }
+
+        .success-message {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .error-message {
+            background-color: #f44336;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        footer {
+            color: white;
+            margin-top: 40px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .member-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .member-actions {
+                width: 100%;
+                justify-content: flex-start;
+                margin-top: 15px;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .action-btn {
+                padding: 6px 10px;
+                font-size: 0.75em;
+            }
+
+            .member-details {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-logo"><img src="/assets/logo.png" alt="Logo"></div>
+        <div class="sidebar-title"><a href="/">Aviation Realism<br>Network</a></div>
+        <div class="sidebar-menu">
+            <a class="sidebar-menu-item" href="/profile">Profile</a>
+            <a class="sidebar-menu-item" href="/announcements">Announcements</a>
+            <a class="sidebar-menu-item" href="/pilots">Pilots</a>
+            <a class="sidebar-menu-item active" href="/admin">Admin Panel</a>
+            <a class="sidebar-menu-item" href="/applications">Applications</a>
+            <a class="sidebar-menu-item" href="/applications/admin">Review Applications</a>
+            <a class="sidebar-menu-item" href="/information">Information</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <h1>Admin Dashboard</h1>
+            <p>Manage members, roles, and flight hours for the Aviation Realism Network.</p>
+        </header>
+
+        <div class="container">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <h2>Members Management</h2>
+                </div>
+                
+                <div class="search-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by username or discord ID..." onkeyup="filterMembers()">
+                </div>
+
+                <div class="members-list" id="membersList">
+                    <div class="empty-state">
+                        <p>Loading members...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="editMemberModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Edit Member</h2>
+                    <button class="modal-close" onclick="closeEditModal()">&times;</button>
+                </div>
+
+                <div id="successMessage" class="success-message"></div>
+                <div id="errorMessage" class="error-message"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <div style="color: #b0b0b0; padding: 10px; background-color: #333; border-radius: 6px;" id="memberUsername"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Flight Hours</label>
+                    <input type="number" class="form-input" id="flighthours" placeholder="Enter flight hours" min="0" step="0.1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Roles</label>
+                    <div class="role-list" id="currentRoles"></div>
+                    <label class="form-label" style="margin-top: 15px;">Add New Role</label>
+                    <select class="form-select" id="roleSelect">
+                        <option value="">Select a role to add...</option>
+                        <option value="admin">Admin</option>
+                        <option value="atc">ATC</option>
+                        <option value="enforcer">Enforcer</option>
+                        <option value="mod">Moderator</option>
+                        <option value="user">User</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="saveChanges()">Save Changes</button>
+                    <button class="btn-secondary" onclick="closeEditModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Aviation Realism Network. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        let allMembers = [];
+        let filteredMembers = [];
+        let currentEditingMemberId = null;
+        let currentEditingMemberRoles = [];
+
+        function filterMembers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                filteredMembers = allMembers;
+            } else {
+                filteredMembers = allMembers.filter(member => {
+                    return member.Username.toLowerCase().includes(searchTerm) ||
+                           (member.DiscordId && member.DiscordId.toString().includes(searchTerm));
+                });
+            }
+            
+            renderMembers();
+        }
+
+        function renderMembers() {
+            const container = document.getElementById('membersList');
+            
+            if (filteredMembers.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No members found.</p></div>';
+                return;
+            }
+
+            container.innerHTML = filteredMembers.map(member => `
+                <div class="member-item">
+                    <div class="member-info">
+                        <div class="member-name">${member.Username}</div>
+                        <div class="member-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Flight Hours:</span>
+                                <span>${member.Flighthours || 0}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Roles:</span>
+                                <span>${member.Role ? member.Role.join(', ') : 'User'}</span>
+                            </div>
+                            ${member.DiscordId ? `<div class="detail-item">
+                                <span class="detail-label">Discord ID:</span>
+                                <span>${member.DiscordId}</span>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                    <div class="member-actions">
+                        <button class="action-btn edit-btn" onclick="openEditModal('${member._id}')">Edit</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openEditModal(memberId) {
+            const member = allMembers.find(m => m._id === memberId);
+            if (!member) {
+                alert('Member not found');
+                return;
+            }
+
+            currentEditingMemberId = memberId;
+            currentEditingMemberRoles = member.Role ? [...member.Role] : [];
+
+            document.getElementById('modalTitle').textContent = 'Edit ' + member.Username;
+            document.getElementById('memberUsername').textContent = member.Username;
+            document.getElementById('flighthours').value = member.Flighthours || 0;
+            document.getElementById('roleSelect').value = '';
+            
+            renderRoleList();
+            clearMessages();
+            document.getElementById('editMemberModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editMemberModal').classList.remove('show');
+            currentEditingMemberId = null;
+            currentEditingMemberRoles = [];
+        }
+
+        function renderRoleList() {
+            const container = document.getElementById('currentRoles');
+            
+            if (currentEditingMemberRoles.length === 0) {
+                container.innerHTML = '<div style="color: #888;">No roles assigned</div>';
+                return;
+            }
+
+            container.innerHTML = currentEditingMemberRoles.map(role => `
+                <div class="role-item">
+                    <span class="role-name">${role}</span>
+                    <button class="remove-role-btn" onclick="removeRole('${role}')">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function removeRole(role) {
+            currentEditingMemberRoles = currentEditingMemberRoles.filter(r => r !== role);
+            renderRoleList();
+        }
+
+        function addRole() {
+            const roleSelect = document.getElementById('roleSelect');
+            const role = roleSelect.value;
+
+            if (!role) {
+                showError('Please select a role to add');
+                return;
+            }
+
+            if (currentEditingMemberRoles.includes(role)) {
+                showError('Member already has this role');
+                return;
+            }
+
+            currentEditingMemberRoles.push(role);
+            roleSelect.value = '';
+            renderRoleList();
+        }
+
+        // Add role when dropdown changes
+        document.addEventListener('change', function(e) {
+            if (e.target.id === 'roleSelect' && e.target.value) {
+                addRole();
+            }
+        });
+
+        function saveChanges() {
+            if (!currentEditingMemberId) {
+                showError('No member selected');
+                return;
+            }
+
+            const flighthours = parseFloat(document.getElementById('flighthours').value);
+            
+            if (isNaN(flighthours) || flighthours < 0) {
+                showError('Flight hours must be a valid non-negative number');
+                return;
+            }
+
+            const member = allMembers.find(m => m._id === currentEditingMemberId);
+            const originalRoles = member.Role || [];
+            
+            // Determine roles to add and remove
+            const rolesToAdd = currentEditingMemberRoles.filter(r => !originalRoles.includes(r));
+            const rolesToRemove = originalRoles.filter(r => !currentEditingMemberRoles.includes(r));
+
+            let promises = [];
+
+            // Update flight hours
+            promises.push(
+                fetch('/api/admin/users/' + currentEditingMemberId + '/updateFlighthours', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ flighthours: flighthours })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to update flight hours');
+                    }
+                    return response.json();
+                })
+            );
+
+            // Add new roles
+            rolesToAdd.forEach(role => {
+                promises.push(
+                    fetch('/api/admin/users/' + currentEditingMemberId + '/updateRole', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ role: role })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to add role: ' + role);
+                        }
+                        return response.json();
+                    })
+                );
+            });
+
+            // Remove roles
+            rolesToRemove.forEach(role => {
+                promises.push(
+                    fetch('/api/admin/users/' + currentEditingMemberId + '/removeRole', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ role: role })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to remove role: ' + role);
+                        }
+                        return response.json();
+                    })
+                );
+            });
+
+            Promise.all(promises)
+                .then(() => {
+                    showSuccess('Member updated successfully');
+                    setTimeout(() => {
+                        closeEditModal();
+                        loadMembers();
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('Error saving changes:', error);
+                    showError('Error saving changes: ' + error.message);
+                });
+        }
+
+        function showSuccess(message) {
+            const messageEl = document.getElementById('successMessage');
+            messageEl.textContent = message;
+            messageEl.classList.add('show');
+        }
+
+        function showError(message) {
+            const messageEl = document.getElementById('errorMessage');
+            messageEl.textContent = message;
+            messageEl.classList.add('show');
+        }
+
+        function clearMessages() {
+            document.getElementById('successMessage').classList.remove('show');
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+
+        function loadMembers() {
+            fetch('/api/admin/users')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('API response was not ok: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    console.log('Members fetched:', result);
+                    allMembers = result.data || result || [];
+                    filteredMembers = allMembers;
+                    renderMembers();
+                })
+                .catch(error => {
+                    console.error('Error fetching members:', error);
+                    document.getElementById('membersList').innerHTML = '<div class="empty-state"><p>Failed to load members: ' + error.message + '</p></div>';
+                });
+        }
+
+        // Load members on page load
+        loadMembers();
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editMemberModal');
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>
