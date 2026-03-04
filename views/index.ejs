@@ -299,6 +299,14 @@
                 <li><a href="/sessions">Sessions</a></li>
                 <li><a href="/charts">Charts</a></li>
                 <li><a href="/announcements">Announcements</a></li>
+                <% if (user && user.role.includes('atc')) { %>
+                    <li><a href="/events">Create Events</a></li>
+                    
+                <% } %>
+                <% if (user && user.role.includes('admin')) { %>
+                    <li><a href="/admin">Admin Panel</a></li>
+                    <li><a href="/applications/admin">apps panel</a></li>
+                <% } %>
                 <li><a href="/login">Login</a></li>
                 <li><a href="/register">Register</a></li>
             </ul>
