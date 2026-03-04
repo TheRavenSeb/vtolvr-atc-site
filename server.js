@@ -572,9 +572,9 @@ app.get("/api/users", async (req, res) => {
     for (let user of users) {
       userList.push({
         id: user._id,
-        username: user.Username,
-        flighthours: user.Flighthours,
-        role: user.Role,
+        Username: user.Username,
+        Flighthours: user.Flighthours,
+        Role: user.Role,
        
       });
     }
