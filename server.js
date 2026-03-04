@@ -568,7 +568,7 @@ app.get("/api/admin/users", authHandler.AdminOnly, async (req, res) => {
 app.post("/api/admin/users/:id/updateRole", authHandler.AdminOnly, async (req, res) => {
   const userId = req.params.id;
   const { role } = req.body;
-  if (!['admin', 'atc', 'enforcer', 'user', 'mod'].includes(role)) {
+  if (!['admin', 'atc', 'enforcer', 'user', 'mod', "owner"].includes(role)) {
     return res.status(400).json({ error: 'Invalid role specified' });
   }
   try {
@@ -592,7 +592,7 @@ app.post("/api/admin/users/:id/updateRole", authHandler.AdminOnly, async (req, r
 app.post("/api/admin/users/:id/removeRole", authHandler.AdminOnly, async (req, res) => {
   const userId = req.params.id;
   const { role } = req.body;
-  if (!['admin', 'atc', 'enforcer', 'user', 'mod'].includes(role)) {
+  if (!['admin', 'atc', 'enforcer', 'user', 'mod', "owner"].includes(role)) {
     return res.status(400).json({ error: 'Invalid role specified' });
   }
   try {
