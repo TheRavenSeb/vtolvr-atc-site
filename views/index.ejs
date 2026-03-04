@@ -358,12 +358,23 @@
                     
                     data.data.slice(0, 3).forEach(session => {
                         const statusClass = session.status === 'active' ? 'status-active' : 'status-upcoming';
+                        
+                        // Format duration: show in minutes if less than 1 hour
+                        let formattedDuration = session.duration;
+                        if (session.duration_minutes && session.duration_minutes < 60) {
+                            formattedDuration = `${session.duration_minutes} minutes`;
+                        }
+                        
+                        // Format start time
+                        const startTime = session.startTime ? new Date(session.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+                        
                         const sessionHTML = `
                             <div class="session-card">
                                 <h4>${session.name}</h4>
                                 <p>🛫 Airport: ${session.airport}</p>
                                 <p>👤 Pilots: ${session.pilots}</p>
-                                <p>⏱️ ${session.duration}</p>
+                                <p>🕐 Start: ${startTime}</p>
+                                <p>⏱️ Duration: ${formattedDuration}</p>
                                 <span class="session-status ${statusClass}">${session.status}</span>
                             </div>
                         `;
