@@ -68,7 +68,7 @@ async function register(username, password, email, role) {
 
 
 function AdminOnly(req, res, next) {
-    if (req.user && req.user.Role.includes('admin')) {
+    if (req.user && req.user.Role.includes('admin') || req.session.user && req.session.user.Role.includes('admin')) {
         return next();
     }
     res.status(403).json({ message: 'Forbidden' });
@@ -99,5 +99,5 @@ module.exports = {
     register,
     AdminOnly,
     restrict
-    
+
 };
