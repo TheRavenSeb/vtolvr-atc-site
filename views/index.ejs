@@ -384,8 +384,10 @@
                         const sessionHTML = `
                             <div class="session-card">
                                 <h4>${session.name}</h4>
+                                <p>Hosted by: ${session.hostName}</p>
+                                <p>📍 Location: ${session.map}</p>
                                 <p>🛫 Airport: ${session.airport}</p>
-                                <p>👤 Pilots: ${session.pilots}</p>
+                                <p>👤 Expected Pilots: ${session.pilots}</p>
                                 <p>🕐 Start: ${startTime}</p>
                                 <p>⏱️ Duration: ${formattedDuration}</p>
                                 <span class="session-status ${statusClass}">${session.status}</span>

@@ -52,6 +52,14 @@ const eventSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  map: {
+    type: String,
+    trim: true,
+  },
+  hostName: {
+    type: String,
+    trim: true,
+  }
 });
 
 module.exports = mongoose.model('Event', eventSchema);

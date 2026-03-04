@@ -474,7 +474,10 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
     duration: data.duration,
     startTime: data.startTime,
     endTime: data.endTime,
-    description: data.description
+    description: data.description,
+    map: data.map,
+    hostName: data.hostName
+    
   }).then(event => {
 
     if (data.alertServer != null && data.alertServer != undefined && data.alertServer === true) {

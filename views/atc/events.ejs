@@ -414,10 +414,25 @@
                         <label class="form-label">Event Name</label>
                         <input type="text" class="form-input" id="eventName" placeholder="e.g., Flight Training Session" required>
                     </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Host Name</label>
+                        <input type="text" class="form-input" id="hostName" placeholder="Enter host name" required>
+                    </div>
 
                     <div class="form-group">
                         <label class="form-label">Airport/Location</label>
                         <input type="text" class="form-input" id="airport" placeholder="e.g., KJFK" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Map</label>
+                        <input type="text" class="form-input" id="map" placeholder="Enter map name or URL...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Host Name</label>
+                        <input type="text" class="form-input" id="hostName" placeholder="Enter host name" required>
                     </div>
 
                     <div class="form-group">
@@ -460,6 +475,8 @@
                         <label class="form-label">Description/Notes</label>
                         <textarea class="form-textarea" id="description" placeholder="Add any additional notes or instructions for pilots..."></textarea>
                     </div>
+
+                    
 
                     <div class="form-group">
                         <label class="form-label">
@@ -517,12 +534,15 @@
                 name: document.getElementById('eventName').value,
                 airport: document.getElementById('airport').value,
                 timezone: document.getElementById('timezone').value,
+                map: document.getElementById('map').value,
                 duration: parseFloat(document.getElementById('duration').value),
                 startTime: new Date(document.getElementById('startTime').value),
                 endTime: new Date(document.getElementById('endTime').value),
                 pilots: parseInt(document.getElementById('pilots').value),
                 description: document.getElementById('description').value,
-                alertServer: document.getElementById('alertServer').checked
+                alertServer: document.getElementById('alertServer').checked,
+                hostName: document.getElementById('hostName').value
+
             };
 
             // Validate dates
