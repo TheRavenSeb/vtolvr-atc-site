@@ -439,6 +439,15 @@ setInterval(() => {
         if (event.status !== 'completed') {
           event.status = 'completed';
           event.save();
+          //delete the event 24 hours after it has ended
+          setTimeout(() => {
+            Events.findByIdAndDelete(event._id).then(() => {
+              console.log('Deleted event:', event.name);
+            }).catch(err => {
+              console.error('Error deleting event:', err);
+            }
+            );}, 24 * 60 * 60 * 1000);
+          
         }
       } else if (eventStart > now) {
         if (event.status !== 'upcoming') {
