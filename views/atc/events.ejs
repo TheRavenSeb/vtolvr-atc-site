@@ -461,6 +461,13 @@
                         <textarea class="form-textarea" id="description" placeholder="Add any additional notes or instructions for pilots..."></textarea>
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="alertServer" style="margin-right: 8px; cursor: pointer;">
+                            Alert Server to Event
+                        </label>
+                    </div>
+
                     <button type="submit" class="submit-btn">Create Event</button>
                 </form>
             </div>
@@ -514,7 +521,8 @@
                 startTime: new Date(document.getElementById('startTime').value),
                 endTime: new Date(document.getElementById('endTime').value),
                 pilots: parseInt(document.getElementById('pilots').value),
-                description: document.getElementById('description').value
+                description: document.getElementById('description').value,
+                alertServer: document.getElementById('alertServer').checked
             };
 
             // Validate dates

@@ -476,6 +476,51 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
     endTime: data.endTime,
     description: data.description
   }).then(event => {
+
+    if (data.alertServer != null && data.alertServer != undefined && data.alertServer === true) {
+      //check if event contains the word "atc"
+      if (event.name.toLowerCase().includes("atc")) {
+          var ping = "<@&1478500804406280284>"}
+          else if (event.name.toLowerCase().includes("formation")){
+             var ping = "<@&1475600053262356551>"
+          }
+          else {
+            var ping = "no ping"
+          }
+        //send a webhook to the admin channel notifying them of the new event
+        const embedBody = {
+          content: `${ping} New Event Created`, // Empty content field
+          "embeds": [{
+              title: `New Event: ${event.name}`,
+            description: `A new event has been created by ${req.session.user.username}. The event is scheduled to take place at ${event.airport} on ${new Date(event.startTime).toLocaleString()} and will last for ${event.duration}. Please reach out to the event organizer if you would like to participate or need more information.`,
+            color: 0x00FF00,
+        }],
+        timestamp: new Date().toISOString()
+    };
+    const body = JSON.stringify(embedBody);
+
+    const webhookURL =process.env.DISCORD_WEBHOOK_URL_EVENTS;
+    fetch(webhookURL, {
+        method: 'POST',
+        headers: {
+
+            'Content-Type': 'application/json'
+        },
+        body:body
+    }).then(response => {
+
+        if (!response.ok) {
+            return response.text().then(errorText => {
+                console.error('Error:', errorText);
+                throw new Error('Failed to send webhook notification');
+            });
+          }
+      }).catch(error => {
+
+        console.error('Error sending webhook notification:', error);  
+        // Don't throw an error here since the event was still created successfully
+      });
+    }
     res.json({ message: 'Event created successfully', event });
   }).catch(error => {
     console.error('Error creating event:', error);
