@@ -401,7 +401,7 @@ function sendDM(userId, message) {
   });
 //events endpoints 
 
-app.get("/events", (req, res) => {
+app.get("atc/events", (req, res) => {
   res.render('events', {
     title: 'Events',
     message: 'View upcoming and past events here'
