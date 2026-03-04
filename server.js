@@ -477,7 +477,7 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
     description: data.description,
     map: data.map,
     hostName: data.hostName
-    
+
   }).then(event => {
 
     if (data.alertServer != null && data.alertServer != undefined && data.alertServer === true) {
@@ -533,7 +533,17 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
 
 
 
-
+app.get("/profile", (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/login');
+  }
+  res.render('profile', {
+    title: 'Profile',
+    message: 'View and edit your profile information here',
+    user: req.session.user
+  });
+}
+);
 
 //admin routes
 
