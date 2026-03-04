@@ -36,8 +36,8 @@ app.use(session({
 // Routes
 app.get('/', (req, res) => {
   res.render('index', { 
-    title: 'VTOL VR ATC Site',
-    message: 'Welcome to the VTOL VR ATC  Site'
+    title: 'Aviation Realism Network',
+    message: 'Welcome to the Aviation Realism Network Website'
   });
 });
 
@@ -480,7 +480,7 @@ app.post("/api/admin/users/:id/updateFlighthours", authHandler.AdminOnly, async 
   try {
     const user = await Users.findById(userId);
     if (!user) { return res.status(404).json({ error: 'User not found' }); }
-    
+
     user.Flighthours = flighthours;
     await user.save();
     res.json({ message: 'User flighthours updated successfully' });
