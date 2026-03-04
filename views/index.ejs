@@ -307,8 +307,13 @@
                     <li><a href="/admin">Admin Panel</a></li>
                     <li><a href="/applications/admin">apps panel</a></li>
                 <% } %>
+                <% if (user) { %>
+                    <li><a href="/logout">Logout</a></li>
+                <% } else { %>
+
                 <li><a href="/login">Login</a></li>
                 <li><a href="/register">Register</a></li>
+                <% } %>
             </ul>
         </nav>
     </header>
