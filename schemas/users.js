@@ -19,6 +19,12 @@ const schema = new mongoose.Schema({
     required: true,
     unique: true
     },
+    DiscordID: {
+    type: String,
+    unique: true,
+    default:""
+
+    },
 
     Flighthours: {
     type: Number,
@@ -30,6 +36,13 @@ const schema = new mongoose.Schema({
         enum: ['admin', 'atc', 'enforcer','user',"mod","owner"],
         default: ['user'],
         required: true
-    }
+    },
+    Callsign: {
+    type: String,
+    required: true,
+    unique: true,
+    uppercase: true,
+    default: "None"
+    },
 });
 module.exports = mongoose.model('Users', schema);

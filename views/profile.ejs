@@ -331,6 +331,163 @@
             margin-bottom: 30px;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #2a2a2a;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: #e0e0e0;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #e0e0e0;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            border: 1px solid #667eea;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #7f9eff;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-input::placeholder {
+            color: #888;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-save:hover {
+            background-color: #45a049;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 12px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background-color: #666;
+        }
+
+        .success-message {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .error-message {
+            background-color: #f44336;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
         footer {
             color: white;
             margin-top: 40px;
@@ -444,7 +601,7 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="alert('Edit profile feature coming soon')">Edit Profile</button>
+                        <button class="btn btn-primary" onclick="openEditModal()">Edit Profile</button>
                         <a href="/logout" class="btn btn-secondary">Logout</a>
                     </div>
                 </div>
@@ -457,9 +614,132 @@
             <% } %>
         </div>
 
+        <div id="editProfileModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Profile</h2>
+                    <button class="modal-close" onclick="closeEditModal()">&times;</button>
+                </div>
+
+                <div id="successMessage" class="success-message"></div>
+                <div id="errorMessage" class="error-message"></div>
+
+                <form id="editProfileForm">
+                    <div class="form-group">
+                        <label class="form-label">Callsign</label>
+                        <input type="text" class="form-input" id="callsign" placeholder="Enter callsign (e.g., N123C)" maxlength="5" style="text-transform: uppercase;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="email" placeholder="Enter your email address">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Discord ID</label>
+                        <input type="text" class="form-input" id="discordId" placeholder="Enter your Discord ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">New Password (leave blank to keep current)</label>
+                        <input type="password" class="form-input" id="password" placeholder="Enter new password">
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-save" onclick="saveProfileChanges()">Save Changes</button>
+                        <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <footer>
             <p>&copy; 2026 Aviation Realism Network. All rights reserved.</p>
         </footer>
     </div>
+
+    <script>
+        function openEditModal() {
+            clearMessages();
+            document.getElementById('editProfileModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editProfileModal').classList.remove('show');
+            document.getElementById('editProfileForm').reset();
+        }
+
+        function saveProfileChanges() {
+            const callsign = document.getElementById('callsign').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const discordId = document.getElementById('discordId').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Build the request body with only non-empty fields
+            const body = {};
+            if (callsign) body.callsign = callsign;
+            if (email) body.email = email;
+            if (discordId) body.discordId = discordId;
+            if (password) body.password = password;
+
+            // If nothing is filled, show error
+            if (Object.keys(body).length === 0) {
+                showError('Please fill in at least one field to update');
+                return;
+            }
+
+            fetch('/api/profile/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Failed to update profile');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                showSuccess('Profile updated successfully!');
+                setTimeout(() => {
+                    closeEditModal();
+                    location.reload(); // Reload to show updated info
+                }, 1500);
+            })
+            .catch(error => {
+                console.error('Error updating profile:', error);
+                showError('Error updating profile: ' + error.message);
+            });
+        }
+
+        function showSuccess(message) {
+            const messageEl = document.getElementById('successMessage');
+            messageEl.textContent = message;
+            messageEl.classList.add('show');
+        }
+
+        function showError(message) {
+            const messageEl = document.getElementById('errorMessage');
+            messageEl.textContent = message;
+            messageEl.classList.add('show');
+        }
+
+        function clearMessages() {
+            document.getElementById('successMessage').classList.remove('show');
+            document.getElementById('errorMessage').classList.remove('show');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editProfileModal');
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -618,6 +618,26 @@ app.post("/api/admin/users/:id/updateRole", authHandler.AdminOnly, async (req, r
     res.status(500).json({ error: 'Failed to update user role' });
   }
 });
+app.post("/api/admin/users/:id/updateCallsign", authHandler.AdminOnly, async (req, res) => {
+  const userId = req.params.id;
+  const { callsign } = req.body;
+  if (typeof callsign !== 'string' || callsign.trim() === '') {
+    return res.status(400).json({ error: 'Invalid callsign specified' });
+  }
+  try {
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    user.Callsign = callsign.trim().toUpperCase();
+    await user.save();
+    res.json({ message: 'User callsign updated successfully' });
+  } catch (error) {
+    console.error('Error updating user callsign:', error);
+    res.status(500).json({ error: 'Failed to update user callsign' });
+  }
+});
+
 
 //!SECTION Endpoint for removing a role from a user
 app.post("/api/admin/users/:id/removeRole", authHandler.AdminOnly, async (req, res) => {
@@ -732,6 +752,44 @@ app.get("/logout", (req, res) => {
       message: 'Create a new account'
      });
    });
+
+
+
+
+// !SECTION Endpoint for user profile updates
+app.post("/api/profile/update", async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const userId = req.session.user.id;
+  const { email, password,callsign,discordId } = req.body;
+  try {
+    const user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (email) {
+      user.Email = email;
+    }
+    if (password) {
+      const { hash, salt } = authHandler.hashPassword(password);
+      user.Hash = hash;
+      user.Salt = salt;
+    }
+    if (callsign) {
+      user.Callsign = callsign.trim().toUpperCase();
+    }
+    if (discordId) {
+      user.DiscordID = discordId.trim();
+    }
+    await user.save();
+    res.json({ message: 'Profile updated successfully' });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
 
     
       
