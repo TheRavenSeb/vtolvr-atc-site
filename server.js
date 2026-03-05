@@ -172,7 +172,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
         return res.status(400).json({ error: 'Callsign is required for ATC applications' });
       }
     } else if (data.type === 'enforcer') {
-      if (!data.discordHandle) {
+      if (!data.discord) {
         return res.status(400).json({ error: 'Discord handle is required for Enforcer applications' });
       }
     } else if(data.discordId === undefined || data.discordId === null){
