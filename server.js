@@ -483,7 +483,7 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
     if (data.alertServer != null && data.alertServer != undefined && data.alertServer === true) {
       //check if event contains the word "atc"
       if (event.name.toLowerCase().includes("atc")) {
-          var ping = "<@&1478500804406280284>"}
+          var ping = "<@&1475600280308416523>"}
           else if (event.name.toLowerCase().includes("formation")){
              var ping = "<@&1475600053262356551>"
           }
@@ -495,7 +495,7 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
           content: `${ping} New Event Created`, // Empty content field
           "embeds": [{
               title: `New Event: ${event.name}`,
-            description: `A new event has been created by ${req.session.user.username}. The event is scheduled to take place at ${event.airport} on ${new Date(event.startTime).toLocaleString()} and will last for ${event.duration}. Please reach out to the event organizer if you would like to participate or need more information.`,
+            description: `A new event has been created by ${req.session.user.username}. The event is scheduled to take place at ${event.airport} on ${new Date(event.startTime).toLocaleString()} and will last for ${event.duration}hours. Please reach out to the event organizer if you would like to participate or need more information.`,
             color: 0x00FF00,
         }],
         timestamp: new Date().toISOString()
@@ -717,7 +717,8 @@ app.post("/api/auth/login", async (req, res) => {
       id: user._id,
       username: user.Username,
       role: user.Role,
-      flighthours: user.Flighthours
+      flighthours: user.Flighthours,
+      Callsign: user.Callsign
     };
     console.log('User logged in:', req.session.user);
     res.json({ message: 'Login successful', user: req.session.user });
