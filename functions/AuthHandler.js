@@ -121,6 +121,17 @@ function EnforcerOnly(req, res, next) {
     return res.redirect('/login');
 
 }
+function HashPassword(password) {
+    return new Promise((resolve, reject) => {
+        hash({ password: password }, function (err, pass, salt, hash) {
+            if (err) return reject(err);
+            resolve({ hash, salt });
+        }
+        );
+    }
+    );
+}
+
 
 
 
@@ -130,5 +141,7 @@ module.exports = {
     AdminOnly,
     restrict,
     ATCOnly,
-    EnforcerOnly
+    EnforcerOnly,
+    HashPassword
+
 };
