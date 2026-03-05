@@ -575,6 +575,7 @@ app.get("/api/users", async (req, res) => {
         Username: user.Username,
         Flighthours: user.Flighthours,
         Role: user.Role,
+        Callsign: user.Callsign
        
       });
     }
