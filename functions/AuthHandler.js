@@ -107,7 +107,8 @@ function ATCOnly(req, res, next) {
     if (req.session.user && req.session.user.role.includes('atc')) {
         return next();
     }
-    res.status(403).json({ message: 'Forbidden' });
+    return res.redirect('/login');
+  
 
 }
 
@@ -117,7 +118,7 @@ function EnforcerOnly(req, res, next) {
     if (req.session.user && req.session.user.role.includes('enforcer')) {
         return next();
     }
-    res.status(403).json({ message: 'Forbidden' });
+    return res.redirect('/login');
 
 }
 
