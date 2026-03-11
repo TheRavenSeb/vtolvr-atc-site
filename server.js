@@ -535,6 +535,25 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
     res.status(500).json({ error: 'Failed to create event' });
   });
 });
+var metarSubmissions = {}
+
+app.get("/api/metar/submit", authHandler.ATCOnly, (req, res) => {
+  const data = req.query;
+  console.log('Received METAR data:', data);
+  //store the metar submission in an array with the session id and the metar data
+  metarSubmissions[data.sessionId] = data;
+  res.json({ message: 'METAR submitted successfully' });
+});
+
+app.get("/api/metar/:sessionId", (req, res) => {
+  const sessionId = req.params.sessionId;
+  const metarData = metarSubmissions[sessionId];
+  if (metarData) {
+    res.json({ data: metarData });
+  } else {
+    res.status(404).json({ error: 'METAR data not found for this session' });
+  }
+});
 
 
 

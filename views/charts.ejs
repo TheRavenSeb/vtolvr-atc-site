@@ -426,6 +426,11 @@
         <header>
             <h1>Raven's Airport Charts</h1>
             <p>Select a chart from the list to view it below. You can also use voice commands by saying "Select chart [chart name]".</p>
+            <div class="metar-input-container">
+                <label for="sessionIdInput">Session ID for METAR:</label>
+                <input type="text" id="sessionIdInput" class="session-id-input" placeholder="Enter session ID">
+                <button id="fetchMetarBtn" class="fetch-metar-btn">Fetch METAR</button>
+            </div>
         </header>
 
         <div class="container">
@@ -577,6 +582,91 @@
        
         // Initialize
         loadCharts();
+
+        // METAR Data Fetching
+        const sessionIdInput = document.getElementById('sessionIdInput');
+        const fetchMetarBtn = document.getElementById('fetchMetarBtn');
+        let metarIntervalId = null;
+        let currentSessionId = null;
+
+        // Function to fetch METAR data
+        async function fetchMetarData(sessionId) {
+            try {
+                const response = await fetch(`/api/metar/${sessionId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('METAR Data:', data);
+                    // You can display this data on the page as needed
+                    displayMetarData(data.data);
+                } else {
+                    console.error('METAR not found for session:', sessionId);
+                }
+            } catch (error) {
+                console.error('Error fetching METAR data:', error);
+            }
+        }
+
+        // Function to display METAR data
+        function displayMetarData(metarData) {
+            // Create or update METAR display container
+            let metarDisplay = document.getElementById('metarDisplay');
+            if (!metarDisplay) {
+                metarDisplay = document.createElement('div');
+                metarDisplay.id = 'metarDisplay';
+                metarDisplay.style.cssText = 'border: 1px solid #ddd; padding: 15px; margin-top: 20px; background-color: #f9f9f9; border-radius: 6px;';
+                document.querySelector('.container').appendChild(metarDisplay);
+            }
+            
+            // Format METAR data using structured format
+            const formattedMetar = {
+                windDirection: metarData.windDirection ? parseInt(metarData.windDirection) : null,
+                windSpeed: metarData.windSpeed ? parseFloat(metarData.windSpeed) : null,
+                windGust: metarData.windGust ? parseFloat(metarData.windGust) : null,
+                visibility: metarData.visibility ? parseFloat(metarData.visibility) : null,
+                isRaining: metarData.isRaining || false,
+                weatherNotes: metarData.weatherNotes || null,
+                timestamp: metarData.timestamp || new Date().toISOString(),
+                sessionId: metarData.sessionId || null
+            };
+            
+            metarDisplay.innerHTML = `
+                <h3>METAR Information</h3>
+                <pre style="white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(formattedMetar, null, 2)}</pre>
+            `;
+        }
+
+        // Event listener for fetch button
+        fetchMetarBtn.addEventListener('click', function() {
+            const sessionId = sessionIdInput.value.trim();
+            if (!sessionId) {
+                alert('Please enter a Session ID');
+                return;
+            }
+
+            currentSessionId = sessionId;
+            
+            // Fetch immediately
+            fetchMetarData(sessionId);
+
+            // Clear any existing interval
+            if (metarIntervalId) {
+                clearInterval(metarIntervalId);
+            }
+
+            // Set up interval to fetch every minute (60000 ms)
+            metarIntervalId = setInterval(() => {
+                fetchMetarData(sessionId);
+            }, 60000);
+
+            console.log('METAR auto-fetch started for session:', sessionId);
+        });
+
+        // Optional: Allow Enter key to trigger fetch
+        sessionIdInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                fetchMetarBtn.click();
+            }
+        });
 
         
     </script>
