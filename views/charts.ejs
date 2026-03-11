@@ -613,25 +613,66 @@
             if (!metarDisplay) {
                 metarDisplay = document.createElement('div');
                 metarDisplay.id = 'metarDisplay';
-                metarDisplay.style.cssText = 'border: 1px solid #ddd; padding: 15px; margin-top: 20px; background-color: #f9f9f9; border-radius: 6px;';
+                metarDisplay.style.cssText = 'border: 1px solid #ddd; padding: 15px; margin-top: 20px; background-color: #f9f9f9; border-radius: 6px; font-family: monospace;';
                 document.querySelector('.container').appendChild(metarDisplay);
             }
             
-            // Format METAR data using structured format
-            const formattedMetar = {
-                windDirection: metarData.windDirection ? parseInt(metarData.windDirection) : null,
-                windSpeed: metarData.windSpeed ? parseFloat(metarData.windSpeed) : null,
-                windGust: metarData.windGust ? parseFloat(metarData.windGust) : null,
-                visibility: metarData.visibility ? parseFloat(metarData.visibility) : null,
-                isRaining: metarData.isRaining || false,
-                weatherNotes: metarData.weatherNotes || null,
-                timestamp: metarData.timestamp || new Date().toISOString(),
-                sessionId: metarData.sessionId || null
-            };
+            // Format METAR data in FAA format
+            let faaMetar = '';
             
+            // Station identifier (if available)
+            if (metarData.stationId) {
+                faaMetar += metarData.stationId + ' ';
+            }
+            
+            // Date-time group (DDHHmm)
+            const now = new Date(metarData.timestamp || new Date());
+            const day = String(now.getUTCDate()).padStart(2, '0');
+            const hour = String(now.getUTCHours()).padStart(2, '0');
+            const minute = String(now.getUTCMinutes()).padStart(2, '0');
+            faaMetar += day + hour + minute + 'Z ';
+            
+            // Wind group (dddssGggKT)
+            if (metarData.windDirection !== null && metarData.windSpeed !== null) {
+                const windDir = String(parseInt(metarData.windDirection)).padStart(3, '0');
+                const windSpd = String(parseInt(metarData.windSpeed)).padStart(2, '0');
+                faaMetar += windDir + windSpd;
+                if (metarData.windGust) {
+                    const gust = String(parseInt(metarData.windGust)).padStart(2, '0');
+                    faaMetar += 'G' + gust;
+                }
+                faaMetar += 'KT ';
+            }
+            
+            // Visibility (NNNSM format)
+            if (metarData.visibility !== null) {
+                const vis = parseFloat(metarData.visibility).toFixed(1);
+                faaMetar += vis + 'SM ';
+            }
+            
+            // Weather phenomena
+            if (metarData.isRaining) {
+                if (metarData.weatherNotes && metarData.weatherNotes.includes('heavy')) {
+                    faaMetar += '+RA ';
+                } else {
+                    faaMetar += 'RA ';
+                }
+            } else if (metarData.weatherNotes) {
+                faaMetar += metarData.weatherNotes + ' ';
+            }
+            
+            // Format for display
+            const metarText = faaMetar.trim();
             metarDisplay.innerHTML = `
-                <h3>METAR Information</h3>
-                <pre style="white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(formattedMetar, null, 2)}</pre>
+                <h3>METAR Information (FAA Format)</h3>
+                <p style="font-size: 1.2em; margin: 10px 0; padding: 10px; background-color: #e8f4f8; border-left: 4px solid #0066cc;">${metarText}</p>
+                <p style="font-size: 0.9em; color: #666; margin-top: 10px;">
+                    <strong>Raw Data:</strong><br>
+                    Wind: ${metarData.windDirection}° @ ${metarData.windSpeed}kt${metarData.windGust ? ' G' + metarData.windGust : ''}<br>
+                    Visibility: ${metarData.visibility}SM<br>
+                    Conditions: ${metarData.weatherNotes || 'Clear'}<br>
+                    Updated: ${now.toUTCString()}
+                </p>
             `;
         }
 
