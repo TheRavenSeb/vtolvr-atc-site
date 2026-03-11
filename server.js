@@ -554,6 +554,14 @@ app.get("/api/metar/:sessionId", (req, res) => {
     res.status(404).json({ error: 'METAR data not found for this session' });
   }
 });
+app.get("/atc/metar", authHandler.ATCOnly, (req, res) => {
+  res.render('atc/METAR', {
+    title: 'METAR Submission',
+    message: 'Submit METAR data for your current session'
+  });
+});
+
+
 
 
 
