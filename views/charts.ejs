@@ -654,7 +654,7 @@
             if (metarData.isRaining) {
                 if (metarData.weatherNotes && metarData.weatherNotes.includes('heavy')) {
                     faaMetar += '+RA ';
-                } else {
+                } else if (metarData.weatherNotes && metarData.weatherNotes.includes('light')) {
                     faaMetar += '-RA ';
                 }
             } else if (metarData.weatherNotes) {
