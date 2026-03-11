@@ -537,7 +537,7 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
 });
 var metarSubmissions = {}
 
-app.get("/api/metar/submit", authHandler.ATCOnly, (req, res) => {
+app.post("/api/metar/submit", authHandler.ATCOnly, (req, res) => {
   const data = req.query;
   console.log('Received METAR data:', data);
   //store the metar submission in an array with the session id and the metar data
