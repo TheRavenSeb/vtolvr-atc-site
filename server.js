@@ -473,7 +473,7 @@ setInterval(() => {
           event.status = 'active';
 
           //open a thread in the events channel for this event and post the event details in the thread while mentioning the attendees
-            bot.channels.fetch("1481658593630617724").then(channel => {
+            bot.channels.fetch("1462570082793160867").then(channel => {
               channel.threads.create({
                 name: `Event: ${event.name}`,
                 autoArchiveDuration: 60,
@@ -492,6 +492,7 @@ setInterval(() => {
                     { name: 'Attendees', value: event.attendees.map(a => a.username).join("\n") || "No attendees yet", inline: false }
                   )
                   .setFooter({ text: "VTOL VR ATC Bot" })
+                  .setColor("#87cefa")
                   .setTimestamp();
 
                   var ping = ""
@@ -583,14 +584,16 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
           .setTitle(event.name)
           .setDescription(event.description || 'No description provided')
           .addFields(
-            { name: 'Airport', value: event.airport, inline: true },
-            { name: 'Start Time', value: `<t:${Math.floor(new Date(event.startTime).getTime() / 1000)}:f>`, inline: true },
-            { name: 'Duration', value: event.duration, inline: true },
+            { name: 'Airport', value: event.airport, inline: false },
+            { name: 'Start Time', value: `<t:${Math.floor(new Date(event.startTime).getTime() / 1000)}:f> | <t:${Math.floor(new Date(event.endTime).getTime() / 1000)}:t>`, inline: true },
+            {name: ":countdown:", value: `<t:${Math.floor(new Date(event.startTime).getTime() / 1000)}:R>`, inline: true},
+            
             { name: 'Map', value: event.map || 'No map provided', inline: false },
             { name: 'Host', value: event.hostName || 'No host provided', inline: true },
             { name: 'Attendees', value: event.attendees.map(a => a.username).join("\n") || "No attendees yet", inline: false }
           )
           .setFooter({ text: "VTOL VR ATC Bot" })
+          .setColor("#87cefa")
 
           .setTimestamp();
           //add buttons for users to sign up for the event as attendees, and when they click the button it adds them to the attendees list in the database and updates the message with the new list of attendees and pings them in the thread
@@ -605,7 +608,7 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
                 .setLabel('Leave Event')
                 .setStyle(ButtonStyle.Danger)
             );
-          bot.channels.fetch("1481658593630617724").then(channel => {
+          bot.channels.fetch("1462570082793160867").then(channel => {
             channel.send({ content: `New event created! ${ping}`, embeds: [embed], components: [row] }).then(message => {
               event.messageId = message.id;
               event.save();

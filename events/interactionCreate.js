@@ -23,7 +23,7 @@ if (interaction.isButton()) {
 	event.attendees.push({ id: interaction.user.id, username: interaction.user.tag });
 	await event.save();
 	//update the event message to show the new attendee count
-	const channel = await client.channels.fetch("1481658593630617724");
+	const channel = await client.channels.fetch("1462570082793160867");
 	const message = await channel.messages.fetch(event.messageId);
 	const Event = EmbedBuilder.from(message.embeds[0])
 	.addFields({ name: "Attendees", value: event.attendees.map(a => a.username).join("\n") || "No attendees yet", inline: false })
@@ -32,10 +32,11 @@ if (interaction.isButton()) {
 
 	const embed = new EmbedBuilder()
 		.setTitle(`Joined Event: ${event.name}`)
-		.setDescription(`You have successfully joined the event "${event.name}".\n\n**Host:** ${event.hostName}\n**Date:** ${new Date(event.date).toLocaleString()}`)
+		.setDescription(`You have successfully joined the event "${event.name}".\n\n**Host:** ${event.hostName}\n**Date:** ${new Date(event.startTime).toLocaleString()}`)
 		.setColor("Green")
 		.setFooter({ text: "VTOL VR ATC Bot" })
-		.setTimestamp();
+		.setTimestamp().setColor("#87cefa");
+		
 
 	return interaction.user.send({ embeds: [embed], ephemeral: true });
 	  } else if (action === "leave") {
@@ -46,7 +47,7 @@ if (interaction.isButton()) {
 	event.attendees = event.attendees.filter(attendee => attendee.id !== interaction.user.id);
 	await event.save();
 	//update the event message to show the new attendee count and remove the user from the attendee list to the already existing attendees field
-	const channel = await client.channels.fetch("1481658593630617724");
+	const channel = await client.channels.fetch("1462570082793160867");
 	const message = await channel.messages.fetch(event.messageId);
 	const Event = EmbedBuilder.from(message.embeds[0])
 	.addFields({ name: "Attendees", value: event.attendees.map(a => a.username).join("\n") || "No attendees yet", inline: false })
@@ -57,10 +58,11 @@ if (interaction.isButton()) {
 	const embed = new EmbedBuilder()
 
 		.setTitle(`Left Event: ${event.name}`)
-		.setDescription(`You have left the event "${event.name}".\n\n**Host:** ${event.hostName}\n**Date:** ${new Date(event.date).toLocaleString()}`)
+		.setDescription(`You have left the event "${event.name}".\n\n**Host:** ${event.hostName}\n**Date:** ${new Date(event.startTime).toLocaleString()}`)
 		.setColor("Red")
 		.setFooter({ text: "VTOL VR ATC Bot" })
-		.setTimestamp();
+		.setTimestamp()
+		.setColor("#87cefa");
 	return interaction.user.send({ embeds: [embed], ephemeral: true });
 	  }
 	}
