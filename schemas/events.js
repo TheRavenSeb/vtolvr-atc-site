@@ -59,7 +59,17 @@ const eventSchema = new mongoose.Schema({
   hostName: {
     type: String,
     trim: true,
-  }
+  },
+  attendees: {
+    type: [Object],
+    default: [
+      
+    ],
+  },
+  messageId: {
+    type: String,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model('Event', eventSchema);

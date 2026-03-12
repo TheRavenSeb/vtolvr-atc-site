@@ -1,12 +1,47 @@
 const express = require('express');
 const path = require('path');
 require('dotenv').config();
-const Mongo = require('./functions/MongoHandler');
+
 const Application = require('./schemas/application');
 const Users = require('./schemas/users');
 const Events = require('./schemas/events');
 const authHandler = require('./functions/AuthHandler');
 const { render } = require('ejs');
+const discord = require('discord.js');
+const { GatewayIntentBits, EmbedBuilder,Collection,ActionRowBuilder,ButtonStyle } = require("discord.js");
+
+
+
+//Discord bot setup
+const botIntents = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.DirectMessages];
+if (process.env.ENABLE_MESSAGE_CONTENT_INTENT === 'true') {
+  botIntents.push(GatewayIntentBits.MessageContent);
+}
+const bot = new discord.Client({ intents: botIntents });
+const fs = require('fs');
+for (const file of fs.readdirSync(path.join(__dirname, './functions'))) {
+    if (file.endsWith('.js')) {
+        const functionName = file.split('.')[0];
+        const functionPath = path.join(__dirname, './functions', file);
+
+        const loadedModule = require(functionPath);
+        if (typeof loadedModule === 'function') {
+          loadedModule(bot);
+          console.log(`[Discord bot]: Loaded [${functionName}] successfully.`);
+        } else {
+          console.log(`[Discord bot]: Skipped [${functionName}] - module does not export an initializer function.`);
+        }
+    }
+}
+bot.commands = new Collection();
+
+const commandFiles = fs.readdirSync(path.join(__dirname, './commands')).filter(file => file.endsWith('.js'));
+const eventFiles = fs.readdirSync(path.join(__dirname, './events')).filter(file => file.endsWith('.js'));
+
+bot.commandFiles = commandFiles;
+
+bot.handleCommands(commandFiles, path.join(__dirname, './commands'));
+bot.handleEvents(eventFiles, path.join(__dirname, './events'));
 
 
 const app = express();
@@ -433,6 +468,45 @@ setInterval(() => {
       if (eventStart <= now && eventEnd >= now) {
         if (event.status !== 'active') {
           event.status = 'active';
+
+          //open a thread in the events channel for this event and post the event details in the thread while mentioning the attendees
+            const channel = bot.channels.fetch("1462570082793160867").then(channel => {
+              channel.threads.create({
+                name: `Event: ${event.name}`,
+                autoArchiveDuration: 60,
+                reason: `Thread for event ${event.name}`
+              }).then(thread => {
+                const embed = new EmbedBuilder()
+
+                  .setTitle(event.name)
+                  .setDescription(event.description || 'No description provided')
+                  .addFields(
+                    { name: 'Airport', value: event.airport, inline: true },
+                    { name: 'Start Time', value: `<t:${Math.floor(new Date(event.startTime).getTime() / 1000)}:f>`, inline: true },
+                    { name: 'Duration', value: event.duration, inline: true },
+                    { name: 'Map', value: event.map || 'No map provided', inline: false },
+                    { name: 'Host', value: event.hostName || 'No host provided', inline: true },
+                    { name: 'Attendees', value: event.attendees.map(a => a.username).join("\n") || "No attendees yet", inline: false }
+                  )
+                  .setFooter({ text: "VTOL VR ATC Bot" })
+                  .setTimestamp();
+
+                  var ping = ""
+                  for (const attendee of event.attendees) {
+                    ping += `<@${attendee.id}> `
+                  }
+                  if (ping === "") {
+                    ping = "No attendees yet"
+                  }
+                  thread.send({ content: `Event is now active! ${ping}`, embeds: [embed] });
+                
+              }).catch(err => {
+                console.error('Error creating thread:', err);
+              });
+            }).catch(err => {
+              console.error('Error fetching channel:', err);
+            }
+            );
           event.save();
         }
       } else if (eventEnd < now) {
@@ -495,45 +569,51 @@ app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
 
           
 
-        //send a webhook to the admin channel notifying them of the new event
-        const embedBody = {
-          content: `${ping} New Event Created`, // Empty content field
-          "embeds": [{
-              title: `New Event: ${event.name}`,
-            description: `A new event has been created by ${req.session.user.username}. The event is scheduled to take place at ${event.airport} on <t:${Math.floor(new Date(event.startTime).getTime() / 1000)}:f> and will last for ${event.duration}hours. Please reach out to the event organizer if you would like to participate or need more information.`,
-            color: 0x00FF00,
-        }],
-        timestamp: new Date().toISOString()
-    };
-    const body = JSON.stringify(embedBody);
+        //send a message to the events channel with the event details and a ping for the appropriate role based on the event name containing certain keywords like "atc" or "formation"
+        // also add buttons to the message for users to sign up for the event as attendees, and when they click the button it adds them to the attendees list in the database and updates the message with the new list of attendees and pings them in the thread
+        const embed = new EmbedBuilder()
+          .setTitle(event.name)
+          .setDescription(event.description || 'No description provided')
+          .addFields(
+            { name: 'Airport', value: event.airport, inline: true },
+            { name: 'Start Time', value: `<t:${Math.floor(new Date(event.startTime).getTime() / 1000)}:f>`, inline: true },
+            { name: 'Duration', value: event.duration, inline: true },
+            { name: 'Map', value: event.map || 'No map provided', inline: false },
+            { name: 'Host', value: event.hostName || 'No host provided', inline: true },
+            { name: 'Attendees', value: event.attendees.map(a => a.username).join("\n") || "No attendees yet", inline: false }
+          )
+          .setFooter({ text: "VTOL VR ATC Bot" })
 
-    const webhookURL =process.env.DISCORD_WEBHOOK_URL_EVENTS;
-    fetch(webhookURL, {
-        method: 'POST',
-        headers: {
-
-            'Content-Type': 'application/json'
-        },
-        body:body
-    }).then(response => {
-
-        if (!response.ok) {
-            return response.text().then(errorText => {
-                console.error('Error:', errorText);
-                throw new Error('Failed to send webhook notification');
+          .setTimestamp();
+          //add buttons for users to sign up for the event as attendees, and when they click the button it adds them to the attendees list in the database and updates the message with the new list of attendees and pings them in the thread
+          const row = new ActionRowBuilder()
+            .addComponents(
+              new discord.ButtonBuilder()
+                .setCustomId(`join_${event._id}`)
+                .setLabel('Join Event')
+                .setStyle(ButtonStyle.Success),
+              new discord.ButtonBuilder()
+                .setCustomId(`leave_${event._id}`)
+                .setLabel('Leave Event')
+                .setStyle(ButtonStyle.Danger)
+            );
+          bot.channels.fetch("1481658593630617724").then(channel => {
+            channel.send({ content: `New event created! ${ping}`, embeds: [embed], components: [row] }).then(message => {
+              event.messageId = message.id;
+              event.save();
+            }).catch(err => {
+              console.error('Error sending event message:', err);
             });
-          }
-      }).catch(error => {
-
-        console.error('Error sending webhook notification:', error);  
-        // Don't throw an error here since the event was still created successfully
-      });
+          }).catch(err => {
+            console.error('Error fetching channel:', err);
+          });
     }
-    res.json({ message: 'Event created successfully', event });
+    res.json({ message: 'Event created successfully' });
   }).catch(error => {
     console.error('Error creating event:', error);
     res.status(500).json({ error: 'Failed to create event' });
   });
+    
 });
 var metarSubmissions = {}
 
@@ -833,6 +913,11 @@ app.post("/api/profile/update", async (req, res) => {
 
 // Start the server
 app.listen(PORT, async () => {
-  await Mongo();
+ bot.login(process.env.Discord_TOKEN).then(() => {
+  console.log('Discord bot logged in successfully');
+}).catch(err => {
+  console.error('Error logging in Discord bot:', err);
+});
+
   console.log(`Server is running on http://localhost:${PORT}`);
 });
