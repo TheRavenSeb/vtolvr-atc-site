@@ -74,6 +74,58 @@
             backdrop-filter: blur(10px);
         }
 
+        .sidebar-close-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 1.8em;
+            cursor: pointer;
+            align-self: flex-end;
+            padding: 0;
+            margin-bottom: -10px;
+        }
+
+        .mobile-nav {
+            display: none;
+            width: 100%;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .mobile-nav-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .hamburger-btn {
+            background: none;
+            border: 1px solid rgba(102, 126, 234, 0.4);
+            color: #e0e0e0;
+            font-size: 1.4em;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 6px;
+            line-height: 1.2;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
         .sidebar-logo {
             width: 120px;
             height: 120px;
@@ -322,6 +374,36 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 999;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-close-btn {
+                display: block;
+            }
+
+            .mobile-nav {
+                display: flex;
+            }
+
+            .main-content {
+                width: 100%;
+            }
+
             .container {
                 flex-direction: column;
                 align-items: center;
@@ -399,7 +481,9 @@
     </style>
 </head>
 <body>
-    <div class="sidebar">
+    <div class="overlay" id="overlay"></div>
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-close-btn" id="sidebarCloseBtn" onclick="closeSidebar()">&times;</button>
         <div class="sidebar-logo"><img src="/assets/logo.png" alt="Logo"></div>
         <div class="sidebar-title"><a href="/">Aviation Realism<br>Network</a></div>
         <div class="sidebar-menu">
@@ -420,12 +504,16 @@
     </div>
 
     <div class="main-content">
+        <div class="mobile-nav">
+            <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Toggle navigation menu">☰</button>
+            <span class="mobile-nav-title">Charts Menu</span>
+        </div>
         <select id="chartList" class="chart-list" style="display:none;">
             <option value="">Select a chart</option>
         </select>
         <header>
             <h1>Raven's Airport Charts</h1>
-            <p>Select a chart from the list to view it below. You can also use voice commands by saying "Select chart [chart name]".</p>
+            <p>Select a chart from the sidebar to view it below. You can also use voice commands by saying "Select chart [chart name]" (if running google).</p>
             <div class="metar-input-container">
                 <label for="sessionIdInput">Session ID for METAR:</label>
                 <input type="text" id="sessionIdInput" class="session-id-input" placeholder="Enter session ID">
@@ -449,7 +537,19 @@
 
     <script>
         const chartDisplay = document.getElementById('chartDisplay');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
         let charts = [];
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
         
         function openSizedWindow() {
         // Opens a new window with specified dimensions
@@ -532,6 +632,9 @@
                     // Update active state
                     document.querySelectorAll('.sidebar-chart-btn').forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
+                    if (window.innerWidth <= 768) {
+                        closeSidebar();
+                    }
                 });
                 container.appendChild(button);
             });
@@ -708,6 +811,20 @@
         sessionIdInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 fetchMetarBtn.click();
+            }
+        });
+
+        // Mobile sidebar behavior
+        overlay.addEventListener('click', closeSidebar);
+
+        const sidebarLinks = document.querySelectorAll('.sidebar a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', closeSidebar);
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeSidebar();
             }
         });
 
