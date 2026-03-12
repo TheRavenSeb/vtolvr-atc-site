@@ -562,10 +562,15 @@ app.get("/atc/metar", authHandler.ATCOnly, (req, res) => {
     message: 'Submit METAR data for your current session'
   });
 });
-
-
-
-
+app.post("/api/metar/clear", (req, res) => {
+  const { sessionId } = req.body;
+  if (sessionId && metarSubmissions[sessionId]) {
+    delete metarSubmissions[sessionId];
+    res.json({ message: 'METAR data cleared successfully' });
+  } else {
+    res.status(404).json({ error: 'METAR data not found for this session' });
+  }
+});
 
 app.get("/profile", (req, res) => {
   if (!req.session.user) {

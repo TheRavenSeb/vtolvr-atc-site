@@ -606,7 +606,7 @@
 
             <div class="button-group">
                 <button type="submit" class="btn btn-submit">Submit METAR Report</button>
-                <button type="reset" class="btn btn-reset">Clear</button>
+                <button type="button" class="btn btn-reset" onclick="clearMetar()">Clear current METAR</button>
             </div>
         </form>
     </div>
@@ -678,6 +678,32 @@
                 showError('Error submitting METAR report: ' + error.message);
             }
         });
+
+        function clearMetar() {
+            //send request to clear current METAR data for the session
+            fetch('/api/metar/clear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ sessionId: document.getElementById('sessionId').value.trim() || null })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to clear METAR data');
+                }
+                return response.json();
+            })
+            .then(data => {
+                showSuccess('Current METAR data cleared successfully!');
+                form.reset();
+            })
+            .catch(error => {
+                console.error('Error clearing METAR data:', error);
+                showError('Error clearing METAR data: ' + error.message);
+            });
+            form.reset();
+        }
 
         function showSuccess(message) {
             successMessage.textContent = message;
