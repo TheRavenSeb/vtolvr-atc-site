@@ -541,14 +541,21 @@ setInterval(() => {
 // event creation endpoint for atcs
 app.post("/api/events/create", authHandler.ATCOnly, (req, res) => {
   const data = req.body;
+
+  // create local dates for the server to reference when updating event statuses based on time zones
+  const startTime = new Date(data.startTime);
+  const endTime = new Date(data.endTime);
+  
+ 
+  
   Events.create({
     name: data.name,
     airport: data.airport,
     timezone: data.timezone,
     pilots: data.pilots,
     duration: data.duration,
-    startTime: data.startTime,
-    endTime: data.endTime,
+    startTime: startTime,
+    endTime: endTime,
     description: data.description,
     map: data.map,
     hostName: data.hostName
