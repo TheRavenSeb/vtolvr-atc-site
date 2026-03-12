@@ -48,8 +48,9 @@ const schema = new mongoose.Schema({
     code: {
     type: String,
     default: function() {
-        return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    }
+        return Math.random().toString(36).substring(2, 8).toUpperCase();
+    },
+    unique: true
     }
 });
 module.exports = mongoose.model('Users', schema);

@@ -54,7 +54,7 @@ if (interaction.isButton()) {
 	.setFooter({ text: `${event.attendees.length} attendees` });
 	message.edit({ embeds: [Event] });
 
-
+      
 	const embed = new EmbedBuilder()
 
 		.setTitle(`Left Event: ${event.name}`)
