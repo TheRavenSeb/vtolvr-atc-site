@@ -1,6 +1,6 @@
 const {EmbedBuilder, SlashCommandBuilder} = require('discord.js');
 
-const User = require("../schemas/user");
+const User = require("../schemas/users");
 const authHandler = require("../functions/AuthHandler");
 module.exports = {
   data: new SlashCommandBuilder()
@@ -37,7 +37,7 @@ module.exports = {
         .setFooter({ text: "ARN Control Bot" })
         .setTimestamp().setColor("#87cefa");
     return interaction.reply({ embeds: [embed], ephemeral: true });
-    
+
 
 
 
