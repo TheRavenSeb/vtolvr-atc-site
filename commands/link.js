@@ -28,6 +28,7 @@ module.exports = {
         return interaction.reply({ content: 'This code has already been used to link an account.', ephemeral: true });
     }
     user.DiscordID = interaction.user.id;
+    user.avatar = interaction.user.avatarURL() || "✈️";
     await user.save();
     const embed = new EmbedBuilder()
 

@@ -24,7 +24,21 @@ if (process.env.ENABLE_MESSAGE_CONTENT_INTENT === 'true') {
 }
 const bot = new discord.Client({ intents: botIntents });
 
+bot.on("guildMemberUpdate", async (oldMember, newMember) => {
+    if (oldMember.avatarURL() === newMember.avatarURL()) {
+        console.log("User didn't changed avatar");
+    } else {
+        const user = await Users.findOne({ DiscordID: newMember.id });
+        if (user) {
+          user.avatar = newMember.avatarURL() || "✈️";
+          user.save();
+          console.log(`Updated avatar for user ${user.Username} to ${user.avatar}`);
+        } else {
+          console.log(`No user found with DiscordID ${newMember.id} to update avatar`);
+        }
 
+    };
+});
 
 const fs = require('fs');
 for (const file of fs.readdirSync(path.join(__dirname, './functions'))) {
