@@ -5,6 +5,11 @@ const schema = new mongoose.Schema({
     required: true, 
     unique: true
     },
+    avatar: {
+    type: String,
+    default: "✈️"
+    },
+
     Hash: {
     type: String,
     required: true

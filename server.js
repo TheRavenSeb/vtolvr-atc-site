@@ -749,7 +749,9 @@ app.get("/api/users", async (req, res) => {
         Username: user.Username,
         Flighthours: user.Flighthours,
         Role: user.Role,
-        Callsign: user.Callsign
+        Callsign: user.Callsign,
+        avatar: user.avatar
+
        
       });
     }
@@ -896,7 +898,8 @@ app.post("/api/auth/login", async (req, res) => {
       role: user.Role,
       flighthours: user.Flighthours,
       Callsign: user.Callsign,
-      code: user.code
+      code: user.code,
+      avatar: user.avatar
     };
     console.log('User logged in:', req.session.user);
     res.json({ message: 'Login successful', user: req.session.user });
@@ -978,10 +981,10 @@ app.listen(PORT, async () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-/* //find all users that dont have code and generate one for them that 6 random characters long containing letter and numbers
-Users.find( {}).then(users => {
+ //find all users that dont have code and generate one for them that 6 random characters long containing letter and numbers
+/*Users.find( {}).then(users => {
   users.forEach(user => { 
-    user.code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    user.avatar = user.avatar || "✈️"
     user.save();
   });
 }).catch(err => {
