@@ -26,17 +26,18 @@ const bot = new discord.Client({ intents: botIntents });
 
 bot.on("userUpdate", async (oldMember, newMember) => {
   const user = await Users.findOne({ DiscordID: newMember.id });
-    if (user.avatar === newMember.avatarURL()) {
+  if (user && user.avatar === newMember.avatarURL()) {
+    
         console.log("User didn't changed avatar");
-    } else {
+    } else if (user && user.avatar !== newMember.avatarURL()) {
         
-        if (user) {
+      
           user.avatar = newMember.avatarURL() || "✈️";
           user.save();
           console.log(`Updated avatar for user ${user.Username} to ${user.avatar}`);
         } else {
           console.log(`No user found with DiscordID ${newMember.id} to update avatar`);
-        }
+        
 
     };
 });
@@ -996,13 +997,38 @@ app.listen(PORT, async () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
- //find all users that dont have code and generate one for them that 6 random characters long containing letter and numbers
-/*Users.find( {}).then(users => {
+/*Users.find().then(users => {
+ 
   users.forEach(user => { 
-    user.avatar = user.avatar || "✈️"
-    user.save();
-  });
-}).catch(err => {
-  console.error('Error generating codes for users:', err);
+    if (user.DiscordID){
 
-});*/
+      bot.guilds.fetch("1462567359792283691").then(guild => {
+        guild.members.fetch(user.DiscordID).then(member => {
+          if (member) {   
+            user.avatar = member.user.avatarURL();
+            user.save().then(() => {
+              console.log(`Updated avatar for user ${user.Username}`);
+            }
+            ).catch(err => {
+              console.error(`Error saving user ${user.Username}:`, err);
+            }
+            );
+          } else {
+            console.warn(`User ${user.Username} with Discord ID ${user.DiscordID} not found in guild`);
+          }
+        }).catch(err => {
+          console.error(`Error fetching member for user ${user.Username}:`, err);
+        }
+        );
+      }
+      ).catch(err => {
+        console.error(`Error fetching guild for user ${user.Username}:`, err);
+        
+
+
+    }
+  )
+}
+
+  });
+})*/
