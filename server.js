@@ -25,10 +25,11 @@ if (process.env.ENABLE_MESSAGE_CONTENT_INTENT === 'true') {
 const bot = new discord.Client({ intents: botIntents });
 
 bot.on("userUpdate", async (oldMember, newMember) => {
-    if (oldMember.avatarURL() === newMember.avatarURL()) {
+  const user = await Users.findOne({ DiscordID: newMember.id });
+    if (user.avatar === newMember.avatarURL()) {
         console.log("User didn't changed avatar");
     } else {
-        const user = await Users.findOne({ DiscordID: newMember.id });
+        
         if (user) {
           user.avatar = newMember.avatarURL() || "✈️";
           user.save();
