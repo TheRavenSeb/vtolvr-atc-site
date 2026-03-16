@@ -706,7 +706,7 @@ app.get("/api/users/discord/", async (req, res) => {
         id: member.user.id,
         avatar: member.user.avatarURL(),
         roles: member.roles.cache.map(role => role.name)
-        
+
       };
     });
     res.json({ data: users });
@@ -717,6 +717,14 @@ app.get("/api/users/discord/", async (req, res) => {
 
 });
 
+
+app.get("/admin/discord", authHandler.AdminOnly, (req, res) => {
+  res.render('admin/discordUsers', {
+    title: 'Discord Users',
+    message: 'View all users in the Discord server here',
+    user: req.session.user
+  });
+});
 
 
 

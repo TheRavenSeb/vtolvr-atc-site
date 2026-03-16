@@ -575,6 +575,7 @@
         <% if (user && user.role.includes('admin')) { %>
             <a href="/admin">Admin Panel</a>
             <a href="/applications/admin">Review Applications</a>
+            <a href="/admin/discord">Discord Users</a>
         <% } %>
         <% if (user) { %>
             <a href="/logout">Logout</a>
@@ -601,10 +602,11 @@
                 <% if (user && user.role.includes('admin')) { %>
                     <li><a href="/admin">Admin Panel</a></li>
                     <li><a href="/applications/admin">apps panel</a></li>
+                    <li><a href="/admin/discord">Discord Users</a></li>
                 <% } %>
                 <% if (user) { %>
                     <li><a href="/logout">Logout</a></li>
-                <% } else { %>
+                <% } else { %}
 
                 <li><a href="/login">Login</a></li>
                 <li><a href="/register">Register</a></li>
