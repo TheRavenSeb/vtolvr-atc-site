@@ -24,7 +24,7 @@ if (process.env.ENABLE_MESSAGE_CONTENT_INTENT === 'true') {
 }
 const bot = new discord.Client({ intents: botIntents });
 
-bot.on("guildMemberUpdate", async (oldMember, newMember) => {
+bot.on("userUpdate", async (oldMember, newMember) => {
     if (oldMember.avatarURL() === newMember.avatarURL()) {
         console.log("User didn't changed avatar");
     } else {
