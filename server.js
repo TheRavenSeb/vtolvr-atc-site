@@ -266,7 +266,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
           "embeds": [{
 
               title: `New Application for ${application.type} position`,
-              description: `An application has been submitted by ${application.name} for the ${application.type} position. Please review the application in the [admin panel](https://atc-vtolvr.site/admin/applications/admin).`,
+              description: `An application has been submitted by ${application.name} for the ${application.type} position. Please review the application in the [admin panel](https://atc-vtolvr.site/applications/admin).`,
               color: 0x00FF00,
           }],
           timestamp: new Date().toISOString()
