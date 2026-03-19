@@ -1100,8 +1100,8 @@ app.get("/logout", (req, res) => {
       return res.status(400).json({ error: 'Email is required.' });
     }
 
-    if (!smtpConfigured) {
-      console.error('SMTP is not configured. Missing SMTP_HOST/SMTP_USER/SMTP_PASS/SMTP_FROM.');
+    if (!mailTransporter) {
+      console.error('SendGrid is not configured. Missing SENDGRID_API_KEY.');
       return res.status(500).json({ error: 'Email service is not configured on the server.' });
     }
 
