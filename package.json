@@ -35,6 +35,7 @@
     "grapesjs-custom-code": "^1.0.2",
     "grapesjs-table": "^1.0.8",
     "mongoose": "^9.2.3",
+    "nodemailer": "^8.0.3",
     "pbkdf2-password": "^1.2.1"
   },
   "devDependencies": {

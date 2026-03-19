@@ -232,6 +232,23 @@
             color: #7c8ff0;
         }
 
+        .forgot-link {
+            text-align: center;
+            margin-top: 12px;
+            color: #b0b0b0;
+            font-size: 0.95em;
+        }
+
+        .forgot-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .forgot-link a:hover {
+            color: #7c8ff0;
+        }
+
         .error-message {
             background-color: #f44336;
             color: white;
@@ -532,7 +549,7 @@
         <div class="login-panel">
             <h2>Sign In</h2>
             <div class="error-message" id="errorMessage"></div>
-            <form id="loginForm">
+            <form id="loginForm" data-redirect="<%= redirect || '' %>">
                 <div class="form-group">
                     <label for="username">Username:</label>
                     <input type="text" id="username" name="username" required>
@@ -550,6 +567,9 @@
 
             <div class="register-link">
                 Don't have an account? <a href="/register">Register here</a>
+            </div>
+            <div class="forgot-link">
+                Forgot your password? <a href="/forgot-password">Reset it here</a>
             </div>
         </div>
 
@@ -597,6 +617,7 @@
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const redirectUrl = document.getElementById('loginForm').dataset.redirect || '/';
             
             const formData = {
                 username: document.getElementById('username').value,
@@ -620,7 +641,7 @@
                     document.getElementById('errorMessage').style.display = 'block';
                 } else {
                     alert('Login successful!');
-                    window.location.href = <%- redirect ? `'${redirect}'` : `''` %>;
+                    window.location.href = redirectUrl;
                 }
             })
             .catch(error => {

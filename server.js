@@ -1,5 +1,7 @@
 const express = require('express');
 const path = require('path');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const Application = require('./schemas/application');
@@ -70,6 +72,56 @@ bot.handleEvents(eventFiles, path.join(__dirname, './events'));
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const passwordResetRequests = new Map();
+
+const smtpPort = Number(process.env.SMTP_PORT || 587);
+const smtpSecure = String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true';
+const smtpConfigured = Boolean(
+  process.env.SMTP_HOST &&
+  process.env.SMTP_USER &&
+  process.env.SMTP_PASS &&
+  process.env.SMTP_FROM
+);
+
+const mailTransporter = smtpConfigured ? nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: smtpPort,
+  secure: smtpSecure,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+}) : null;
+
+function generateResetCode() {
+  return crypto.randomInt(100000, 1000000).toString();
+}
+
+function normalizeEmail(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+async function sendPasswordResetEmail(email, code) {
+  if (!mailTransporter) {
+    throw new Error('SMTP is not configured');
+  }
+
+  await mailTransporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to: email,
+    subject: 'Your Aviation Realism Network password reset code',
+    text: `Your password reset code is: ${code}. This code expires in 10 minutes. If you did not request this, you can ignore this email.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #222;">
+        <h2 style="margin-bottom: 8px;">Password Reset Request</h2>
+        <p>Your verification code is:</p>
+        <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 12px 0;">${code}</div>
+        <p>This code expires in <strong>10 minutes</strong>.</p>
+        <p style="margin-top: 18px; color: #666;">If you did not request a password reset, you can safely ignore this message.</p>
+      </div>
+    `
+  });
+}
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
@@ -128,7 +180,7 @@ app.get("/information", authHandler.restrict, (req, res) => {
   });
 });
 
-app.get("/charts", authHandler.restrict, (req, res) => {
+app.get("/charts", (req, res) => {
   res.render('charts', {
     title: 'Charts',
     message: 'VTOL VR Maps and Charts',
@@ -1000,6 +1052,136 @@ app.get("/logout", (req, res) => {
       message: 'Create a new account'
      });
    });
+
+  app.get('/forgot-password', (req, res) => {
+    res.render('auth/forgotPass', {
+      title: 'Forgot Password',
+      message: 'Reset your account password'
+    });
+  });
+
+  app.post('/api/auth/forgot-password/request-code', async (req, res) => {
+    const email = normalizeEmail(req.body?.email);
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    if (!smtpConfigured) {
+      console.error('SMTP is not configured. Missing SMTP_HOST/SMTP_USER/SMTP_PASS/SMTP_FROM.');
+      return res.status(500).json({ error: 'Email service is not configured on the server.' });
+    }
+
+    try {
+      const user = await Users.findOne({ Email: email });
+      if (user) {
+        const code = generateResetCode();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        passwordResetRequests.set(email, {
+          code,
+          userId: user._id.toString(),
+          expiresAt,
+          verified: false,
+          attempts: 0
+        });
+
+        try {
+          await sendPasswordResetEmail(email, code);
+        } catch (mailError) {
+          passwordResetRequests.delete(email);
+          console.error('Error sending password reset email:', mailError);
+          return res.status(500).json({ error: 'Unable to send verification email right now. Please try again later.' });
+        }
+      }
+
+      return res.json({ message: 'If an account exists, a verification code has been sent.' });
+    } catch (error) {
+      console.error('Error generating password reset code:', error);
+      return res.status(500).json({ error: 'Failed to process password reset request.' });
+    }
+  });
+
+  app.post('/api/auth/forgot-password/verify-code', async (req, res) => {
+    const email = normalizeEmail(req.body?.email);
+    const code = String(req.body?.code || '').trim();
+
+    if (!email || !code) {
+      return res.status(400).json({ error: 'Email and code are required.' });
+    }
+
+    const entry = passwordResetRequests.get(email);
+    if (!entry) {
+      return res.status(400).json({ error: 'No reset request found for that email.' });
+    }
+
+    if (entry.expiresAt.getTime() < Date.now()) {
+      passwordResetRequests.delete(email);
+      return res.status(400).json({ error: 'Verification code expired. Request a new code.' });
+    }
+
+    if (entry.attempts >= 5) {
+      passwordResetRequests.delete(email);
+      return res.status(429).json({ error: 'Too many attempts. Request a new code.' });
+    }
+
+    if (entry.code !== code) {
+      entry.attempts += 1;
+      passwordResetRequests.set(email, entry);
+      return res.status(400).json({ error: 'Invalid verification code.' });
+    }
+
+    entry.verified = true;
+    entry.attempts = 0;
+    passwordResetRequests.set(email, entry);
+    return res.json({ message: 'Code verified successfully.' });
+  });
+
+  app.post('/api/auth/forgot-password/reset', async (req, res) => {
+    const email = normalizeEmail(req.body?.email);
+    const code = String(req.body?.code || '').trim();
+    const newPassword = String(req.body?.newPassword || '');
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ error: 'Email, code, and new password are required.' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+    }
+
+    const entry = passwordResetRequests.get(email);
+    if (!entry) {
+      return res.status(400).json({ error: 'No reset request found. Request a new code.' });
+    }
+
+    if (entry.expiresAt.getTime() < Date.now()) {
+      passwordResetRequests.delete(email);
+      return res.status(400).json({ error: 'Verification code expired. Request a new code.' });
+    }
+
+    if (!entry.verified || entry.code !== code) {
+      return res.status(400).json({ error: 'Please verify your code before resetting the password.' });
+    }
+
+    try {
+      const user = await Users.findById(entry.userId);
+      if (!user) {
+        passwordResetRequests.delete(email);
+        return res.status(404).json({ error: 'User account not found.' });
+      }
+
+      const hashedPassword = await authHandler.hashPassword(newPassword);
+      user.Hash = hashedPassword.hash;
+      user.Salt = hashedPassword.salt;
+      await user.save();
+
+      passwordResetRequests.delete(email);
+      return res.json({ message: 'Password reset successful.' });
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      return res.status(500).json({ error: 'Failed to reset password.' });
+    }
+  });
 
 
 
