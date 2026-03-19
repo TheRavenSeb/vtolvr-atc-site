@@ -90,8 +90,26 @@ const mailTransporter = smtpConfigured ? nodemailer.createTransport({
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
+  },
+  connectionTimeout: 5000,
+  socketTimeout: 5000,
+  pool: {
+    maxConnections: 1,
+    maxMessages: 5,
+    rateDelta: 2000,
+    rateLimit: 1
   }
 }) : null;
+
+if (mailTransporter && process.env.NODE_ENV !== 'production') {
+  mailTransporter.verify((error, success) => {
+    if (error) {
+      console.error('[SMTP] Connection test failed:', error.message);
+    } else {
+      console.log('[SMTP] Connection test successful');
+    }
+  });
+}
 
 function generateResetCode() {
   return crypto.randomInt(100000, 1000000).toString();
@@ -101,26 +119,48 @@ function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
 }
 
-async function sendPasswordResetEmail(email, code) {
+function sendPasswordResetEmail(email, code) {
   if (!mailTransporter) {
-    throw new Error('SMTP is not configured');
+    return Promise.reject(new Error('SMTP is not configured'));
   }
 
-  await mailTransporter.sendMail({
-    from: process.env.SMTP_FROM,
-    to: email,
-    subject: 'Your Aviation Realism Network password reset code',
-    text: `Your password reset code is: ${code}. This code expires in 10 minutes. If you did not request this, you can ignore this email.`,
-    html: `
-      <div style="font-family: Arial, sans-serif; color: #222;">
-        <h2 style="margin-bottom: 8px;">Password Reset Request</h2>
-        <p>Your verification code is:</p>
-        <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 12px 0;">${code}</div>
-        <p>This code expires in <strong>10 minutes</strong>.</p>
-        <p style="margin-top: 18px; color: #666;">If you did not request a password reset, you can safely ignore this message.</p>
-      </div>
-    `
-  });
+  const smtpTimeoutMs = 8000;
+  const fromAddress = process.env.SMTP_FROM;
+  const fromDisplay = process.env.SMTP_FROM_NAME || 'Aviation Realism Network';
+  const plainText = [
+    'Aviation Realism Network password reset',
+    '',
+    `Your verification code is: ${code}`,
+    'This code expires in 10 minutes.',
+    '',
+    'If you did not request this code, you can ignore this email.'
+  ].join('\n');
+
+  return Promise.race([
+    mailTransporter.sendMail({
+      envelope: {
+        from: fromAddress,
+        to: email
+      },
+      from: `"${fromDisplay}" <${fromAddress}>`,
+      replyTo: fromAddress,
+      to: email,
+      subject: 'Aviation Realism Network password reset code',
+      text: plainText,
+      html: `
+        <div style="font-family: Arial, sans-serif; color: #222;">
+          <h2 style="margin-bottom: 8px;">Aviation Realism Network password reset</h2>
+          <p>Your verification code is:</p>
+          <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 12px 0;">${code}</div>
+          <p>This code expires in <strong>10 minutes</strong>.</p>
+          <p style="margin-top: 18px; color: #666;">If you did not request this code, you can ignore this email.</p>
+        </div>
+      `
+    }),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('SMTP send timeout')), smtpTimeoutMs)
+    )
+  ]);
 }
 
 // Set EJS as the view engine
@@ -1085,13 +1125,23 @@ app.get("/logout", (req, res) => {
           attempts: 0
         });
 
-        try {
-          await sendPasswordResetEmail(email, code);
-        } catch (mailError) {
-          passwordResetRequests.delete(email);
-          console.error('Error sending password reset email:', mailError);
-          return res.status(500).json({ error: 'Unable to send verification email right now. Please try again later.' });
-        }
+        sendPasswordResetEmail(email, code)
+          .then(info => {
+            console.log('[SMTP] Reset email accepted:', {
+              messageId: info?.messageId,
+              accepted: info?.accepted,
+              rejected: info?.rejected,
+              response: info?.response
+            });
+          })
+          .catch(mailError => {
+            console.error('Error sending password reset email:', {
+              message: mailError?.message,
+              code: mailError?.code,
+              response: mailError?.response,
+              command: mailError?.command
+            });
+          });
       }
 
       return res.json({ message: 'If an account exists, a verification code has been sent.' });
