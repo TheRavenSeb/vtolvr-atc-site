@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="description" content="Airport Chart Maker - Create custom airport diagrams">
+    <title>Chart Maker - <%= title %></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+
+        .form-section {
+            background-color: #2a2a2a;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            height: fit-content;
+        }
+
+        .form-section h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+            font-size: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #b0b0b0;
+            font-size: 13px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background-color: #3a3a3a;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            background-color: #667eea;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #5568d3;
+        }
+
+        button.secondary {
+            background-color: #555;
+            color: #e0e0e0;
+        }
+
+        button.secondary:hover {
+            background-color: #666;
+        }
+
+        .preview-section {
+            background-color: #2a2a2a;
+            padding: 25px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .preview-section h2 {
+            color: #667eea;
+            font-size: 22px;
+        }
+
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 4px;
+            overflow: auto;
+            border: 2px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .template-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            aspect-ratio: 11 / 14;
+            border: 3px solid #333;
+            background-color: white;
+        }
+
+        .template-image {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .overlay-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            font-family: Arial, sans-serif;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .overlay-text {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        /* Top-right header - Airport name and code */
+        .header-title {
+            top: 35px;
+            right: 30px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: right;
+            color: #000;
+        }
+
+        .header-location {
+            top: 65px;
+            right: 30px;
+            font-size: 11px;
+            text-align: right;
+            color: #333;
+        }
+
+        /* Center-right runway numbers */
+        .runway-top {
+            top: 150px;
+            right: 140px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .runway-bottom {
+            bottom: 120px;
+            right: 140px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* Frequencies box - right side, middle */
+        .freq-primary {
+            top: 45%;
+            right: 35px;
+            font-size: 12px;
+            background-color: #e8e8e8;
+            padding: 4px 6px;
+            border: 2px solid #999;
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .freq-secondary {
+            top: 52%;
+            right: 35px;
+            font-size: 12px;
+            background-color: #e8e8e8;
+            padding: 4px 6px;
+            border: 2px solid #999;
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Bottom footer */
+        .footer-location {
+            bottom: 25px;
+            right: 30px;
+            font-size: 11px;
+            text-align: right;
+            color: #333;
+        }
+
+        .footer-code {
+            bottom: 8px;
+            right: 30px;
+            font-size: 11px;
+            text-align: right;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .header-code {
+            display: none;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .container {
+                display: block;
+                max-width: 100%;
+                grid-template-columns: 1fr;
+            }
+
+            .form-section {
+                display: none;
+            }
+
+            .preview-section {
+                background-color: white;
+                border: none;
+                padding: 0;
+            }
+
+            .button-group {
+                display: none;
+            }
+
+            .chart-container {
+                border: none;
+                background-color: white;
+                padding: 0;
+            }
+
+            .template-wrapper {
+                max-width: 100%;
+                border: 2px solid #000;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .form-section {
+                max-width: 400px;
+            }
+        }
+
+        h2 {
+            margin-top: 25px;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        h2:first-child {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form Section -->
+        <div class="form-section">
+            <h2>Airport Information</h2>
+            
+            <div class="form-group">
+                <label>Airport Name</label>
+                <input type="text" id="airportName" placeholder="e.g., Shork Airport" value="Shork Airport">
+            </div>
+
+            <div class="form-group">
+                <label>Airport Code (ICAO)</label>
+                <input type="text" id="airportCode" placeholder="e.g., ABRV" value="ABRV" maxlength="4">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>City</label>
+                    <input type="text" id="city" placeholder="e.g., City" value="City">
+                </div>
+                <div class="form-group">
+                    <label>State</label>
+                    <input type="text" id="state" placeholder="e.g., STATE" value="STATE">
+                </div>
+            </div>
+
+            <h2>Runway Configuration</h2>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Runway 1 Number</label>
+                    <input type="text" id="runway1" placeholder="e.g., 35" value="35">
+                </div>
+                <div class="form-group">
+                    <label>Runway 2 Number (Opposite)</label>
+                    <input type="text" id="runway2" placeholder="e.g., 17" value="17">
+                </div>
+            </div>
+
+            <h2>Frequencies</h2>
+
+            <div class="form-group">
+                <label>Airbase/Primary Frequency</label>
+                <input type="text" id="freq1" placeholder="e.g., Shork Airbase: 2415" value="Shork Airbase: 2415">
+            </div>
+
+            <div class="form-group">
+                <label>Secondary Frequency</label>
+                <input type="text" id="freq2" placeholder="e.g., General: 254.0" value="General: 254.0">
+            </div>
+
+            <div class="button-group">
+                <button class="print-btn" onclick="printChart()">🖨️ Print Chart</button>
+                <button class="secondary" onclick="resetForm()">Reset</button>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section">
+            <h2>Chart Preview</h2>
+            <div class="chart-container">
+                <div class="template-wrapper">
+                    <img src="/assets/diagrams/medium.png" alt="Airport Template" class="template-image">
+                    <div class="overlay-layer">
+                        <!-- Header -->
+                        <div class="overlay-text header-code" id="headerCode">AL-289 (FAA)</div>
+                        <div class="overlay-text header-title" id="headerTitle">SHORK AIRPORT (ABRV)</div>
+                        <div class="overlay-text header-location" id="headerLocation">CITY, STATE</div>
+
+                        <!-- Runway numbers -->
+                        <div class="overlay-text runway-top" id="runwayTop">35</div>
+                        <div class="overlay-text runway-bottom" id="runwayBottom">17</div>
+
+                        <!-- Frequencies -->
+                        <div class="overlay-text freq-primary" id="freqPrimary">Shork Airbase: 2415</div>
+                        <div class="overlay-text freq-secondary" id="freqSecondary">General: 254.0</div>
+
+                        <!-- Footer -->
+                        <div class="overlay-text footer-location" id="footerLocation">CITY, STATE</div>
+                        <div class="overlay-text footer-code" id="footerCode">SHORK AIRPORT(ABRV)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Event listeners for real-time updates
+        document.getElementById('airportName').addEventListener('input', updateOverlay);
+        document.getElementById('airportCode').addEventListener('input', updateOverlay);
+        document.getElementById('city').addEventListener('input', updateOverlay);
+        document.getElementById('state').addEventListener('input', updateOverlay);
+        document.getElementById('runway1').addEventListener('input', updateOverlay);
+        document.getElementById('runway2').addEventListener('input', updateOverlay);
+        document.getElementById('freq1').addEventListener('input', updateOverlay);
+        document.getElementById('freq2').addEventListener('input', updateOverlay);
+
+        function updateOverlay() {
+            const name = document.getElementById('airportName').value || 'AIRPORT';
+            const code = document.getElementById('airportCode').value || 'ABRV';
+            const city = document.getElementById('city').value || 'CITY';
+            const state = document.getElementById('state').value || 'STATE';
+            const runway1 = document.getElementById('runway1').value || '35';
+            const runway2 = document.getElementById('runway2').value || '17';
+            const freq1 = document.getElementById('freq1').value || 'Shork Airbase: 2415';
+            const freq2 = document.getElementById('freq2').value || 'General: 254.0';
+
+            // Update header
+            document.getElementById('headerTitle').textContent = `${name.toUpperCase()} (${code})`;
+            document.getElementById('headerLocation').textContent = `${city.toUpperCase()}, ${state.toUpperCase()}`;
+
+            // Update footer
+            document.getElementById('footerLocation').textContent = `${city.toUpperCase()}, ${state.toUpperCase()}`;
+            document.getElementById('footerCode').textContent = `${name.toUpperCase()}(${code})`;
+
+            // Update runway numbers
+            document.getElementById('runwayTop').textContent = runway1;
+            document.getElementById('runwayBottom').textContent = runway2;
+
+            // Update frequencies
+            document.getElementById('freqPrimary').textContent = freq1;
+            document.getElementById('freqSecondary').textContent = freq2;
+        }
+
+        function printChart() {
+            window.print();
+        }
+
+        function resetForm() {
+            document.getElementById('airportName').value = 'Shork Airport';
+            document.getElementById('airportCode').value = 'ABRV';
+            document.getElementById('city').value = 'City';
+            document.getElementById('state').value = 'STATE';
+            document.getElementById('runway1').value = '35';
+            document.getElementById('runway2').value = '17';
+            document.getElementById('freq1').value = 'Shork Airbase: 2415';
+            document.getElementById('freq2').value = 'General: 254.0';
+            updateOverlay();
+        }
+
+        // Initial render
+        updateOverlay();
+    </script>
+</body>
+</html>

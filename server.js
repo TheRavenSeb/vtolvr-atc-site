@@ -1279,7 +1279,12 @@ app.post("/api/profile/update", async (req, res) => {
   }
 });
 
-
+app.get("/admin/chart-maker", authHandler.AdminOnly("mod"), (req, res) => {
+  res.render('admin/chartMaker', {
+    title: 'Chart Maker',
+    message: 'Create custom charts for events here'
+  });
+});
     
       
 
