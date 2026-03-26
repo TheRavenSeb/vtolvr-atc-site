@@ -1,248 +1,1047 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title><%= title %></title>
-	<link rel="stylesheet" href="/styles/style.css" />
+	<title>Chart Maker</title>
 	<style>
-		.chart-maker-wrap {
-			max-width: 1100px;
-			margin: 2rem auto;
-			padding: 1rem;
-			color: #fff;
+		:root {
+			--bg: #0b1020;
+			--panel: #111827;
+			--panel-2: #1f2937;
+			--text: #e5e7eb;
+			--muted: #9ca3af;
+			--border: #334155;
+			--ok: #22c55e;
+			--error: #ef4444;
+			--warn: #f59e0b;
 		}
 
-		.chart-maker-grid {
+		* { box-sizing: border-box; }
+		body {
+			margin: 0;
+			font-family: Inter, Segoe UI, Arial, sans-serif;
+			background: var(--bg);
+			color: var(--text);
+		}
+
+		.page {
 			display: grid;
-			grid-template-columns: 320px 1fr;
-			gap: 1rem;
+			grid-template-columns: 360px 1fr;
+			height: 100vh;
 		}
 
-		.card {
-			background: #13151a;
-			border: 1px solid #2a2f38;
-			border-radius: 12px;
-			padding: 1rem;
+		.sidebar {
+			background: var(--panel);
+			border-right: 1px solid var(--border);
+			overflow: auto;
+			padding: 14px;
 		}
 
-		.card h2 {
-			margin-top: 0;
-			font-size: 1.1rem;
+		h1 {
+			font-size: 1.05rem;
+			margin: 0 0 8px;
+		}
+
+		h2 {
+			font-size: 0.86rem;
+			letter-spacing: .02em;
+			margin: 12px 0 6px;
+			color: #cbd5e1;
 		}
 
 		.field {
 			display: flex;
 			flex-direction: column;
-			margin-bottom: 0.75rem;
-			gap: 0.3rem;
+			gap: 4px;
+			margin-bottom: 8px;
+		}
+
+		.grid-2 {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
 		}
 
 		label {
-			font-size: 0.85rem;
-			color: #b4bdcb;
+			font-size: 0.74rem;
+			color: var(--muted);
 		}
 
-		input, select, textarea, button {
+		input, select, button, textarea {
+			width: 100%;
+			background: var(--panel-2);
+			border: 1px solid var(--border);
+			color: var(--text);
 			border-radius: 8px;
-			border: 1px solid #3a4352;
-			background: #0f1217;
-			color: #fff;
-			padding: 0.55rem 0.65rem;
-			font-size: 0.95rem;
-		}
-
-		textarea {
-			resize: vertical;
-			min-height: 80px;
-			font-family: monospace;
+			padding: 7px 10px;
+			font-size: 0.84rem;
 		}
 
 		button {
 			cursor: pointer;
-			background: #255eea;
-			border: none;
-			font-weight: 600;
-			padding: 0.65rem;
-			margin-top: 0.5rem;
+			background: #0b3b53;
+			border-color: #155e75;
 		}
 
-		#downloadBtn {
-			background: #1b9c57;
+		button.secondary { background: #1f2937; }
+		button.warn { background: #3f1d1d; border-color: #7f1d1d; }
+
+		.btn-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
 		}
 
-		#downloadBtn:disabled {
-			background: #444;
-			cursor: not-allowed;
+		.help {
+			font-size: 0.74rem;
+			color: var(--muted);
+			line-height: 1.3;
 		}
 
-		.preview {
+		.status {
+			min-height: 18px;
+			margin-top: 8px;
+			font-size: 0.78rem;
+		}
+
+		.status.ok { color: var(--ok); }
+		.status.error { color: var(--error); }
+		.status.warn { color: var(--warn); }
+
+		.parts-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
+		}
+
+		.part-card {
+			background: #0f172a;
+			border: 1px solid #374151;
+			border-radius: 8px;
+			padding: 6px;
+			cursor: grab;
+		}
+
+		.part-card:active { cursor: grabbing; }
+
+		.part-thumb {
 			width: 100%;
-			background: #0a0d12;
-			border: 1px solid #2a2f38;
-			border-radius: 12px;
-			min-height: 380px;
+			height: 64px;
+			object-fit: contain;
+			background: #030712;
+			border-radius: 6px;
+			border: 1px solid #1f2937;
+		}
+
+		.part-name {
+			margin-top: 4px;
+			font-size: 0.72rem;
+			color: #cbd5e1;
+			word-break: break-word;
+		}
+
+		.canvas-wrap {
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			overflow: auto;
+			padding: 20px;
 		}
 
-		.preview img {
-			max-width: 100%;
-			height: auto;
-			display: none;
+		#canvas {
+			background: #000;
+			border: 1px solid #334155;
+			box-shadow: 0 12px 28px rgba(0,0,0,.4);
 		}
 
-		#status {
-			color: #9da7b8;
-			font-size: 0.9rem;
-			margin-top: 0.25rem;
-			min-height: 20px;
-		}
-
-		@media (max-width: 900px) {
-			.chart-maker-grid {
-				grid-template-columns: 1fr;
-			}
+		textarea {
+			resize: vertical;
+			min-height: 120px;
+			font-family: Consolas, Monaco, monospace;
+			font-size: 0.74rem;
 		}
 	</style>
 </head>
 <body>
-	<div class="chart-maker-wrap">
-		<h1><%= title %></h1>
-		<p><%= message %></p>
+	<div class="page">
+		<aside class="sidebar">
+			<h1>Chart Maker — Drag & Drop</h1>
+			<div class="help">Use parts from the diagrams folder as pieces. Template image is only a placement reference for text.</div>
 
-		<div class="chart-maker-grid">
-			<div class="card">
-				<h2>Chart Inputs</h2>
-				<form id="chartMakerForm">
-					<div class="field">
-						<label for="template">Template</label>
-						<select id="template" name="template">
-							<option value="large.png" selected>large.png</option>
-							<option value="medium.png">medium.png</option>
-						</select>
-					</div>
-
-					<div class="field">
-						<label for="airportName">Airport Name</label>
-						<input id="airportName" name="airportName" value="Shork Airport" required />
-					</div>
-
-					<div class="field">
-						<label for="airportAbbr">Airport Abbreviation</label>
-						<input id="airportAbbr" name="airportAbbr" value="ABRV" required />
-					</div>
-
-					<div class="field">
-						<label for="cityState">City, State</label>
-						<input id="cityState" name="cityState" value="City, State" required />
-					</div>
-
-					<div class="field">
-						<label for="airportCode">Chart Code</label>
-						<input id="airportCode" name="airportCode" value="AL-289 (FAA)" required />
-					</div>
-
-					<div class="field">
-						<label for="runways">Runways (one per line)</label>
-						<textarea id="runways" name="runways" required>35
-17</textarea>
-					</div>
-
-					<div class="field">
-						<label for="callsign">Airport Frequency Line</label>
-						<input id="callsign" name="callsign" value="Shork Airbase:241.5" required />
-					</div>
-
-					<div class="field">
-						<label for="generalFrequency">General Frequency Line</label>
-						<input id="generalFrequency" name="generalFrequency" value="General: 254.0" required />
-					</div>
-
-					<button type="submit">Generate PNG</button>
-					<button id="downloadBtn" type="button" disabled>Download PNG</button>
-					<p id="status"></p>
-				</form>
-			</div>
-
-			<div class="card">
-				<h2>Preview</h2>
-				<div class="preview">
-					<img id="chartPreview" alt="Generated airport chart preview" />
-					<span id="previewPlaceholder">Your generated PNG will appear here.</span>
+			<h2>Template</h2>
+			<div class="grid-2">
+				<div class="field">
+					<label for="layoutSize">Layout</label>
+					<select id="layoutSize">
+						<option value="large">large</option>
+						<option value="medium">medium</option>
+					</select>
+				</div>
+				<div class="field">
+					<label for="theme">Theme</label>
+					<select id="theme">
+						<option value="light">light</option>
+						<option value="dark">dark</option>
+					</select>
 				</div>
 			</div>
-		</div>
+
+			<h2>Header Text (template anchors)</h2>
+			<div class="field"><label for="airportName">Airport Name</label><input id="airportName" value="AIRPORT NAME" /></div>
+			<div class="grid-2">
+				<div class="field"><label for="airportCode">Airport Code</label><input id="airportCode" value="ABRV" /></div>
+				<div class="field"><label for="cityState">City, State</label><input id="cityState" value="CITY, STATE" /></div>
+			</div>
+			<div class="field"><label for="docRef">Doc Ref</label><input id="docRef" value="AL-289 (FAA)" /></div>
+
+			<h2>Text Style</h2>
+			<div class="field"><label for="fontFamily">Font Family</label><input id="fontFamily" value="Arial, Helvetica, sans-serif" /></div>
+			<div class="grid-2">
+				<div class="field"><label for="titleFontSize">Title Font Size</label><input id="titleFontSize" type="number" value="42" min="8" /></div>
+				<div class="field"><label for="docRefFontSize">Doc Ref Font Size</label><input id="docRefFontSize" type="number" value="18" min="8" /></div>
+			</div>
+			<div class="grid-2">
+				<div class="field"><label for="airportFontSize">Airport Font Size</label><input id="airportFontSize" type="number" value="34" min="8" /></div>
+				<div class="field"><label for="cityFontSize">City Font Size</label><input id="cityFontSize" type="number" value="24" min="8" /></div>
+			</div>
+			<div class="field"><label for="runwayFontSize">Runway Font Size</label><input id="runwayFontSize" type="number" value="28" min="8" /></div>
+
+			<h2>Anchor Position Overrides (x/y)</h2>
+			<div class="grid-2">
+				<div class="field"><label for="topLeftTitleX">Top Left Title X</label><input id="topLeftTitleX" type="number" /></div>
+				<div class="field"><label for="topLeftTitleY">Top Left Title Y</label><input id="topLeftTitleY" type="number" /></div>
+			</div>
+			<div class="grid-2">
+				<div class="field"><label for="topCenterRefX">Top Center Ref X</label><input id="topCenterRefX" type="number" /></div>
+				<div class="field"><label for="topCenterRefY">Top Center Ref Y</label><input id="topCenterRefY" type="number" /></div>
+			</div>
+			<div class="grid-2">
+				<div class="field"><label for="topRightAirportX">Top Right Airport X</label><input id="topRightAirportX" type="number" /></div>
+				<div class="field"><label for="topRightAirportY">Top Right Airport Y</label><input id="topRightAirportY" type="number" /></div>
+			</div>
+			<div class="grid-2">
+				<div class="field"><label for="topRightCityX">Top Right City X</label><input id="topRightCityX" type="number" /></div>
+				<div class="field"><label for="topRightCityY">Top Right City Y</label><input id="topRightCityY" type="number" /></div>
+			</div>
+			<div class="grid-2">
+				<div class="field"><label for="bottomLeftTitleX">Bottom Left Title X</label><input id="bottomLeftTitleX" type="number" /></div>
+				<div class="field"><label for="bottomLeftTitleY">Bottom Left Title Y</label><input id="bottomLeftTitleY" type="number" /></div>
+			</div>
+			<div class="grid-2">
+				<div class="field"><label for="bottomRightCityX">Bottom Right City X</label><input id="bottomRightCityX" type="number" /></div>
+				<div class="field"><label for="bottomRightCityY">Bottom Right City Y</label><input id="bottomRightCityY" type="number" /></div>
+			</div>
+			<div class="grid-2">
+				<div class="field"><label for="bottomRightAirportX">Bottom Right Airport X</label><input id="bottomRightAirportX" type="number" /></div>
+				<div class="field"><label for="bottomRightAirportY">Bottom Right Airport Y</label><input id="bottomRightAirportY" type="number" /></div>
+			</div>
+
+			<h2>Selected Piece</h2>
+			<div class="grid-2">
+				<div class="field"><label for="posX">X</label><input id="posX" type="number" /></div>
+				<div class="field"><label for="posY">Y</label><input id="posY" type="number" /></div>
+			</div>
+			<div class="grid-2">
+				<div class="field"><label for="pieceScale">Scale</label><input id="pieceScale" type="number" step="0.05" min="0.05" value="0.20" /></div>
+				<div class="field"><label for="pieceRotation">Rotation</label><input id="pieceRotation" type="number" step="1" value="0" /></div>
+			</div>
+			<div class="grid-2">
+				<div class="field"><label for="textContent">Text Content</label><input id="textContent" placeholder="Enter text" /></div>
+				<div class="field"><label for="textFontSize">Text Font Size</label><input id="textFontSize" type="number" step="1" min="8" value="28" /></div>
+			</div>
+			<button id="deletePieceBtn" class="warn">Delete Piece</button>
+			<button id="duplicatePieceBtn" class="secondary">Duplicate</button>
+
+			<h2>Diagram Pieces</h2>
+			<div id="partsGrid" class="parts-grid"></div>
+
+			<h2>Text Items (drag to canvas)</h2>
+			<div class="parts-grid">
+				<div class="part-card" draggable="true" data-text-type="runway">
+					<div class="part-thumb" style="display: flex; align-items: center; justify-content: center; background: #1e3a8a; font-size: 12px; color: #fff; font-weight: bold;">RWY 12</div>
+					<div class="part-name">Runway Number</div>
+				</div>
+			</div>
+
+			<h2>Layout JSON</h2>
+			<textarea id="layoutJson"></textarea>
+			<div class="btn-row">
+				<button id="syncJsonBtn" class="secondary">Sync to JSON</button>
+				<button id="applyJsonBtn" class="secondary">Apply JSON</button>
+			</div>
+
+			<h2>Actions</h2>
+			<div class="btn-row">
+				<button id="clearBtn" class="warn">Clear Pieces</button>
+				<button id="resetTextBtn" class="secondary">Reset Text</button>
+				<button id="exportPngBtn">Export PNG</button>
+				<button id="exportJsonBtn" class="secondary">Download JSON</button>
+			</div>
+
+			<div id="status" class="status"></div>
+		</aside>
+
+		<main class="canvas-wrap">
+			<canvas id="canvas" width="768" height="1138"></canvas>
+		</main>
 	</div>
 
 	<script>
-		const form = document.getElementById('chartMakerForm');
-		const statusText = document.getElementById('status');
-		const chartPreview = document.getElementById('chartPreview');
-		const placeholder = document.getElementById('previewPlaceholder');
-		const downloadBtn = document.getElementById('downloadBtn');
+		const PART_SOURCES = [
+			{ id: "largeLight", label: "Large Airbase Light", src: "/assets/diagrams/large/LargeAirbaseLight.png" },
+			{ id: "largeDark", label: "Large Airbase Dark", src: "/assets/diagrams/large/LargeAirbaseDark.png" },
+			{ id: "mediumLight", label: "Medium Airbase Light", src: "/assets/diagrams/medium/MediumAirbaseLight.png" },
+			{ id: "mediumDark", label: "Medium Airbase Dark", src: "/assets/diagrams/medium/MediumAirbaseDark.png" }
+		];
 
-		let currentImageData = null;
-		let currentFilename = 'airport-diagram.png';
+		const TEMPLATE_REF = {
+			large: {
+				w: 768,
+				h: 1138,
+				text: {
+					topLeftTitle: { x: 36, y: 56, align: "left", size: 42 },
+					topCenterRef: { x: 384, y: 44, align: "center", size: 18 },
+					topRunway: { x: 384, y: 78, align: "center", size: 28 },
+					topRightAirport: { x: 732, y: 34, align: "right", size: 34 },
+					topRightCity: { x: 732, y: 62, align: "right", size: 24 },
+					bottomLeftTitle: { x: 36, y: 1104, align: "left", size: 42 },
+					bottomRightCity: { x: 732, y: 1086, align: "right", size: 24 },
+					bottomRightAirport: { x: 732, y: 1120, align: "right", size: 34 },
+					bottomRunway: { x: 384, y: 1118, align: "center", size: 28 }
+				}
+			},
+			medium: {
+				w: 768,
+				h: 1138,
+				text: {
+					topCenterRef: { x: 384, y: 30, align: "center", size: 30 }
+				}
+			}
+		};
 
-		form.addEventListener('submit', async (event) => {
-			event.preventDefault();
-			statusText.textContent = 'Generating chart PNG...';
-			downloadBtn.disabled = true;
+		const defaultState = {
+			meta: {
+				layoutSize: "large",
+				theme: "light",
+				airportName: "AIRPORT NAME",
+				airportCode: "ABRV",
+				cityState: "CITY, STATE",
+				docRef: "AL-289 (FAA)",
+				fontFamily: "Arial, Helvetica, sans-serif",
+				fontSizes: {
+					title: 42,
+					docRef: 18,
+					airport: 34,
+					city: 24,
+					runway: 28
+				},
+				anchors: {
+					topLeftTitle: { x: 36, y: 56 },
+					topCenterRef: { x: 384, y: 44 },
+					topRightAirport: { x: 732, y: 34 },
+					topRightCity: { x: 732, y: 62 },
+					bottomLeftTitle: { x: 36, y: 1104 },
+					bottomRightCity: { x: 732, y: 1086 },
+					bottomRightAirport: { x: 732, y: 1120 }
+				}
+			},
+			pieces: [],
+			textItems: []
+		};
 
-			const formData = new FormData(form);
-			const payload = Object.fromEntries(formData.entries());
+		let state = structuredClone(defaultState);
+		let selectedPieceId = null;
+		let selectedTextItemId = null;
+		let drag = null;
+		let nextPieceId = 1;
+		let nextTextItemId = 1;
 
-			const runwaysText = payload.runways || '';
-			payload.runways = runwaysText
-				.split('\n')
-				.map(r => r.trim())
-				.filter(r => r.length > 0);
+		const imageCache = new Map();
+		const els = {
+			layoutSize: document.getElementById("layoutSize"),
+			theme: document.getElementById("theme"),
+			airportName: document.getElementById("airportName"),
+			airportCode: document.getElementById("airportCode"),
+			cityState: document.getElementById("cityState"),
+			docRef: document.getElementById("docRef"),
+			fontFamily: document.getElementById("fontFamily"),
+			titleFontSize: document.getElementById("titleFontSize"),
+			docRefFontSize: document.getElementById("docRefFontSize"),
+			airportFontSize: document.getElementById("airportFontSize"),
+			cityFontSize: document.getElementById("cityFontSize"),
+			runwayFontSize: document.getElementById("runwayFontSize"),
+			topLeftTitleX: document.getElementById("topLeftTitleX"),
+			topLeftTitleY: document.getElementById("topLeftTitleY"),
+			topCenterRefX: document.getElementById("topCenterRefX"),
+			topCenterRefY: document.getElementById("topCenterRefY"),
+			topRightAirportX: document.getElementById("topRightAirportX"),
+			topRightAirportY: document.getElementById("topRightAirportY"),
+			topRightCityX: document.getElementById("topRightCityX"),
+			topRightCityY: document.getElementById("topRightCityY"),
+			bottomLeftTitleX: document.getElementById("bottomLeftTitleX"),
+			bottomLeftTitleY: document.getElementById("bottomLeftTitleY"),
+			bottomRightCityX: document.getElementById("bottomRightCityX"),
+			bottomRightCityY: document.getElementById("bottomRightCityY"),
+			bottomRightAirportX: document.getElementById("bottomRightAirportX"),
+			bottomRightAirportY: document.getElementById("bottomRightAirportY"),
+			partsGrid: document.getElementById("partsGrid"),
+			layoutJson: document.getElementById("layoutJson"),
+			status: document.getElementById("status"),
+			canvas: document.getElementById("canvas"),
+			posX: document.getElementById("posX"),
+			posY: document.getElementById("posY"),
+			pieceScale: document.getElementById("pieceScale"),
+			pieceRotation: document.getElementById("pieceRotation"),
+			textContent: document.getElementById("textContent"),
+			textFontSize: document.getElementById("textFontSize"),
+			deletePieceBtn: document.getElementById("deletePieceBtn"),
+			duplicatePieceBtn: document.getElementById("duplicatePieceBtn"),
+			syncJsonBtn: document.getElementById("syncJsonBtn"),
+			applyJsonBtn: document.getElementById("applyJsonBtn"),
+			clearBtn: document.getElementById("clearBtn"),
+			resetTextBtn: document.getElementById("resetTextBtn"),
+			exportPngBtn: document.getElementById("exportPngBtn"),
+			exportJsonBtn: document.getElementById("exportJsonBtn")
+		};
 
-			if (payload.runways.length === 0) {
-				statusText.textContent = 'Error: At least one runway is required.';
+		const ctx = els.canvas.getContext("2d");
+
+		function setStatus(message, type = "ok") {
+			els.status.textContent = message;
+			els.status.className = `status ${type}`;
+		}
+
+		function loadImage(src) {
+			if (imageCache.has(src)) return Promise.resolve(imageCache.get(src));
+			return new Promise((resolve, reject) => {
+				const img = new Image();
+				img.onload = () => {
+					imageCache.set(src, img);
+					resolve(img);
+				};
+				img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+				img.src = src;
+			});
+		}
+
+		async function preloadParts() {
+			await Promise.all(PART_SOURCES.map((p) => loadImage(p.src)));
+		}
+
+		function syncFormFromState() {
+			const m = state.meta;
+			els.layoutSize.value = m.layoutSize;
+			els.theme.value = m.theme;
+			els.airportName.value = m.airportName;
+			els.airportCode.value = m.airportCode;
+			els.cityState.value = m.cityState;
+			els.docRef.value = m.docRef;
+			els.fontFamily.value = m.fontFamily || "Arial, Helvetica, sans-serif";
+			els.titleFontSize.value = Number(m.fontSizes?.title ?? 42);
+			els.docRefFontSize.value = Number(m.fontSizes?.docRef ?? 18);
+			els.airportFontSize.value = Number(m.fontSizes?.airport ?? 34);
+			els.cityFontSize.value = Number(m.fontSizes?.city ?? 24);
+			els.runwayFontSize.value = Number(m.fontSizes?.runway ?? 28);
+			els.topLeftTitleX.value = m.anchors?.topLeftTitle?.x ?? TEMPLATE_REF.large.text.topLeftTitle.x;
+			els.topLeftTitleY.value = m.anchors?.topLeftTitle?.y ?? TEMPLATE_REF.large.text.topLeftTitle.y;
+			els.topCenterRefX.value = m.anchors?.topCenterRef?.x ?? TEMPLATE_REF.large.text.topCenterRef.x;
+			els.topCenterRefY.value = m.anchors?.topCenterRef?.y ?? TEMPLATE_REF.large.text.topCenterRef.y;
+			els.topRightAirportX.value = m.anchors?.topRightAirport?.x ?? TEMPLATE_REF.large.text.topRightAirport.x;
+			els.topRightAirportY.value = m.anchors?.topRightAirport?.y ?? TEMPLATE_REF.large.text.topRightAirport.y;
+			els.topRightCityX.value = m.anchors?.topRightCity?.x ?? TEMPLATE_REF.large.text.topRightCity.x;
+			els.topRightCityY.value = m.anchors?.topRightCity?.y ?? TEMPLATE_REF.large.text.topRightCity.y;
+			els.bottomLeftTitleX.value = m.anchors?.bottomLeftTitle?.x ?? TEMPLATE_REF.large.text.bottomLeftTitle.x;
+			els.bottomLeftTitleY.value = m.anchors?.bottomLeftTitle?.y ?? TEMPLATE_REF.large.text.bottomLeftTitle.y;
+			els.bottomRightCityX.value = m.anchors?.bottomRightCity?.x ?? TEMPLATE_REF.large.text.bottomRightCity.x;
+			els.bottomRightCityY.value = m.anchors?.bottomRightCity?.y ?? TEMPLATE_REF.large.text.bottomRightCity.y;
+			els.bottomRightAirportX.value = m.anchors?.bottomRightAirport?.x ?? TEMPLATE_REF.large.text.bottomRightAirport.x;
+			els.bottomRightAirportY.value = m.anchors?.bottomRightAirport?.y ?? TEMPLATE_REF.large.text.bottomRightAirport.y;
+		}
+
+		function syncStateFromForm() {
+			state.meta.layoutSize = els.layoutSize.value;
+			state.meta.theme = els.theme.value;
+			state.meta.airportName = els.airportName.value.trim();
+			state.meta.airportCode = els.airportCode.value.trim();
+			state.meta.cityState = els.cityState.value.trim();
+			state.meta.docRef = els.docRef.value.trim();
+			state.meta.fontFamily = (els.fontFamily.value || "Arial, Helvetica, sans-serif").trim();
+			state.meta.fontSizes = {
+				title: Number(els.titleFontSize.value || 42),
+				docRef: Number(els.docRefFontSize.value || 18),
+				airport: Number(els.airportFontSize.value || 34),
+				city: Number(els.cityFontSize.value || 24),
+				runway: Number(els.runwayFontSize.value || 28)
+			};
+			state.meta.anchors = state.meta.anchors || {};
+			state.meta.anchors.topLeftTitle = {
+				x: Number(els.topLeftTitleX.value || TEMPLATE_REF.large.text.topLeftTitle.x),
+				y: Number(els.topLeftTitleY.value || TEMPLATE_REF.large.text.topLeftTitle.y)
+			};
+			state.meta.anchors.topCenterRef = {
+				x: Number(els.topCenterRefX.value || TEMPLATE_REF.large.text.topCenterRef.x),
+				y: Number(els.topCenterRefY.value || TEMPLATE_REF.large.text.topCenterRef.y)
+			};
+			state.meta.anchors.topRightAirport = {
+				x: Number(els.topRightAirportX.value || TEMPLATE_REF.large.text.topRightAirport.x),
+				y: Number(els.topRightAirportY.value || TEMPLATE_REF.large.text.topRightAirport.y)
+			};
+			state.meta.anchors.topRightCity = {
+				x: Number(els.topRightCityX.value || TEMPLATE_REF.large.text.topRightCity.x),
+				y: Number(els.topRightCityY.value || TEMPLATE_REF.large.text.topRightCity.y)
+			};
+			state.meta.anchors.bottomLeftTitle = {
+				x: Number(els.bottomLeftTitleX.value || TEMPLATE_REF.large.text.bottomLeftTitle.x),
+				y: Number(els.bottomLeftTitleY.value || TEMPLATE_REF.large.text.bottomLeftTitle.y)
+			};
+			state.meta.anchors.bottomRightCity = {
+				x: Number(els.bottomRightCityX.value || TEMPLATE_REF.large.text.bottomRightCity.x),
+				y: Number(els.bottomRightCityY.value || TEMPLATE_REF.large.text.bottomRightCity.y)
+			};
+			state.meta.anchors.bottomRightAirport = {
+				x: Number(els.bottomRightAirportX.value || TEMPLATE_REF.large.text.bottomRightAirport.x),
+				y: Number(els.bottomRightAirportY.value || TEMPLATE_REF.large.text.bottomRightAirport.y)
+			};
+		}
+
+		function sizeCanvas() {
+			const t = TEMPLATE_REF[state.meta.layoutSize] || TEMPLATE_REF.large;
+			els.canvas.width = t.w;
+			els.canvas.height = t.h;
+		}
+
+		function getPartById(id) {
+			return PART_SOURCES.find((p) => p.id === id) || null;
+		}
+
+		function addTextItem(text = "RWY 12", x = 384, y = 569, fontSize = 28) {
+			state.textItems.push({
+				id: `text-${nextTextItemId++}`,
+				text,
+				x,
+				y,
+				fontSize,
+				align: "center"
+			});
+			selectedPieceId = null;
+			selectedTextItemId = state.textItems[state.textItems.length - 1].id;
+			syncSelectedControls();
+			render();
+		}
+
+		function addPiece(partId, x = 384, y = 569) {
+			const def = getPartById(partId);
+			if (!def) return;
+			state.pieces.push({
+				id: `piece-${nextPieceId++}`,
+				partId,
+				x,
+				y,
+				scale: 0.2,
+				rotation: 0,
+				alpha: 1
+			});
+			selectedPieceId = state.pieces[state.pieces.length - 1].id;
+			syncSelectedControls();
+			render();
+		}
+
+		function drawTextAnchors() {
+			const template = TEMPLATE_REF[state.meta.layoutSize] || TEMPLATE_REF.large;
+			const text = structuredClone(template.text);
+			if (state.meta.layoutSize === "large" && state.meta.anchors) {
+				for (const key of Object.keys(state.meta.anchors)) {
+					if (text[key]) {
+						text[key].x = Number(state.meta.anchors[key].x ?? text[key].x);
+						text[key].y = Number(state.meta.anchors[key].y ?? text[key].y);
+					}
+				}
+			}
+			ctx.save();
+			ctx.fillStyle = state.meta.theme === "dark" ? "#f8fafc" : "#111827";
+			ctx.strokeStyle = state.meta.theme === "dark" ? "#f8fafc" : "#111827";
+			ctx.lineWidth = 1;
+
+			if (state.meta.layoutSize === "large") {
+				drawTemplateText("AIRPORT DIAGRAM", { ...text.topLeftTitle, size: state.meta.fontSizes?.title ?? text.topLeftTitle.size });
+				drawTemplateText(state.meta.docRef, { ...text.topCenterRef, size: state.meta.fontSizes?.docRef ?? text.topCenterRef.size });
+				drawTemplateText(`${state.meta.airportName} (${state.meta.airportCode})`, { ...text.topRightAirport, size: state.meta.fontSizes?.airport ?? text.topRightAirport.size });
+				drawTemplateText(state.meta.cityState, { ...text.topRightCity, size: state.meta.fontSizes?.city ?? text.topRightCity.size });
+				drawTemplateText("AIRPORT DIAGRAM", { ...text.bottomLeftTitle, size: state.meta.fontSizes?.title ?? text.bottomLeftTitle.size });
+				drawTemplateText(state.meta.cityState, { ...text.bottomRightCity, size: state.meta.fontSizes?.city ?? text.bottomRightCity.size });
+				drawTemplateText(`${state.meta.airportName} (${state.meta.airportCode})`, { ...text.bottomRightAirport, size: state.meta.fontSizes?.airport ?? text.bottomRightAirport.size });
+			} else if (state.meta.layoutSize === "medium") {
+				drawTemplateText("AIRPORT DIAGRAM", { ...text.topLeftTitle, size: state.meta.fontSizes?.title ?? text.topLeftTitle.size });
+				drawTemplateText(state.meta.docRef, { ...text.topCenterRef, size: state.meta.fontSizes?.docRef ?? text.topCenterRef.size });
+				drawTemplateText(`${state.meta.airportName} (${state.meta.airportCode})`, { ...text.topRightAirport, size: state.meta.fontSizes?.airport ?? text.topRightAirport.size });
+				drawTemplateText(state.meta.cityState, { ...text.topRightCity, size: state.meta.fontSizes?.city ?? text.topRightCity.size });
+				drawTemplateText("AIRPORT DIAGRAM", { ...text.bottomLeftTitle, size: state.meta.fontSizes?.title ?? text.bottomLeftTitle.size });
+				drawTemplateText(state.meta.cityState, { ...text.bottomRightCity, size: state.meta.fontSizes?.city ?? text.bottomRightCity.size });
+				drawTemplateText(`${state.meta.airportName} (${state.meta.airportCode})`, { ...text.bottomRightAirport, size: state.meta.fontSizes?.airport ?? text.bottomRightAirport.size });
+			}else {
+                drawTemplateText(state.meta.docRef, { ...text.topCenterRef, size: state.meta.fontSizes?.docRef ?? text.topCenterRef.size });
+            }
+
+			ctx.restore();
+		}
+
+		function drawTemplateText(value, anchor) {
+			const fontFamily = state.meta.fontFamily || "Arial, Helvetica, sans-serif";
+			ctx.font = `${anchor.size}px ${fontFamily}`;
+			ctx.textAlign = anchor.align;
+			ctx.textBaseline = "alphabetic";
+			ctx.fillText(value, anchor.x, anchor.y);
+		}
+
+		function drawFrame() {
+			ctx.save();
+			ctx.fillStyle = state.meta.theme === "dark" ? "#000" : "#e5e7eb";
+			ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
+			ctx.strokeStyle = state.meta.theme === "dark" ? "#94a3b8" : "#1f2937";
+			ctx.lineWidth = 1;
+			ctx.strokeRect(36, 88, els.canvas.width - 72, els.canvas.height - 176);
+			ctx.restore();
+		}
+
+		function render() {
+			syncStateFromForm();
+			sizeCanvas();
+			drawFrame();
+			drawTextAnchors();
+
+			for (const piece of state.pieces) {
+				const part = getPartById(piece.partId);
+				if (!part) continue;
+				const img = imageCache.get(part.src);
+				if (!img) continue;
+				const w = img.width * piece.scale;
+				const h = img.height * piece.scale;
+				ctx.save();
+				ctx.globalAlpha = piece.alpha;
+				ctx.translate(piece.x, piece.y);
+				ctx.rotate((piece.rotation * Math.PI) / 180);
+				ctx.drawImage(img, -w / 2, -h / 2, w, h);
+				if (piece.id === selectedPieceId) {
+					ctx.strokeStyle = "#22d3ee";
+					ctx.lineWidth = 2;
+					ctx.strokeRect(-w / 2, -h / 2, w, h);
+				}
+				ctx.restore();
+			}
+
+			for (const item of state.textItems) {
+				const fontFamily = state.meta.fontFamily || "Arial, Helvetica, sans-serif";
+				ctx.save();
+				ctx.fillStyle = state.meta.theme === "dark" ? "#f8fafc" : "#111827";
+				ctx.font = `${item.fontSize}px ${fontFamily}`;
+				ctx.textAlign = item.align;
+				ctx.textBaseline = "middle";
+				ctx.fillText(item.text, item.x, item.y);
+				if (item.id === selectedTextItemId) {
+					const metrics = ctx.measureText(item.text);
+					const w = metrics.width;
+					const h = item.fontSize;
+					ctx.strokeStyle = "#22d3ee";
+					ctx.lineWidth = 2;
+					ctx.strokeRect(item.x - w / 2, item.y - h / 2, w, h);
+				}
+				ctx.restore();
+			}
+		}
+
+		function buildPartsPanel() {
+			els.partsGrid.innerHTML = "";
+			for (const part of PART_SOURCES) {
+				const card = document.createElement("div");
+				card.className = "part-card";
+				card.draggable = true;
+				card.dataset.partId = part.id;
+				card.innerHTML = `
+					<img class="part-thumb" src="${part.src}" alt="${part.label}" />
+					<div class="part-name">${part.label}</div>
+				`;
+				card.addEventListener("click", () => addPiece(part.id));
+				card.addEventListener("dragstart", (e) => {
+					e.dataTransfer.setData("text/plain", part.id);
+				});
+				els.partsGrid.appendChild(card);
+			}
+		}
+
+		function pickPiece(mx, my) {
+			for (let i = state.textItems.length - 1; i >= 0; i -= 1) {
+				const item = state.textItems[i];
+				const metrics = ctx.measureText(item.text);
+				const w = metrics.width;
+				const h = item.fontSize;
+				if (mx >= item.x - w / 2 && mx <= item.x + w / 2 && my >= item.y - h / 2 && my <= item.y + h / 2) {
+					selectedPieceId = null;
+					return { type: "text", item };
+				}
+			}
+			for (let i = state.pieces.length - 1; i >= 0; i -= 1) {
+				const piece = state.pieces[i];
+				const part = getPartById(piece.partId);
+				const img = part ? imageCache.get(part.src) : null;
+				if (!img) continue;
+				const w = img.width * piece.scale;
+				const h = img.height * piece.scale;
+				const dx = mx - piece.x;
+				const dy = my - piece.y;
+				const rad = (-piece.rotation * Math.PI) / 180;
+				const rx = dx * Math.cos(rad) - dy * Math.sin(rad);
+				const ry = dx * Math.sin(rad) + dy * Math.cos(rad);
+				if (rx >= -w / 2 && rx <= w / 2 && ry >= -h / 2 && ry <= h / 2) {
+					selectedTextItemId = null;
+					return { type: "piece", piece };
+				}
+			}
+			return null;
+		}
+
+		function canvasPoint(evt) {
+			const rect = els.canvas.getBoundingClientRect();
+			const x = ((evt.clientX - rect.left) / rect.width) * els.canvas.width;
+			const y = ((evt.clientY - rect.top) / rect.height) * els.canvas.height;
+			return { x, y };
+		}
+
+		function syncSelectedControls() {
+			const p = state.pieces.find((x) => x.id === selectedPieceId);
+			const t = state.textItems.find((x) => x.id === selectedTextItemId);
+			
+			if (!p && !t) {
+				els.posX.value = "";
+				els.posY.value = "";
+				els.pieceScale.value = "0.20";
+				els.pieceRotation.value = "0";
+				els.textContent.value = "";
+				els.textFontSize.value = "28";
 				return;
 			}
-
-			try {
-				const response = await fetch('/api/chart-maker/generate', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(payload)
-				});
-
-				const result = await response.json();
-				if (!response.ok) {
-					throw new Error(result.error || 'Failed to generate chart.');
-				}
-
-				currentImageData = result.imageData;
-				currentFilename = result.filename || 'airport-diagram.png';
-
-				chartPreview.src = currentImageData;
-				chartPreview.style.display = 'block';
-				placeholder.style.display = 'none';
-				downloadBtn.disabled = false;
-				statusText.textContent = 'Chart PNG generated successfully.';
-			} catch (error) {
-				statusText.textContent = 'Error: ' + error.message;
-				downloadBtn.disabled = true;
+			
+			if (p) {
+				els.posX.value = Math.round(p.x);
+				els.posY.value = Math.round(p.y);
+				els.pieceScale.value = Number(p.scale).toFixed(2);
+				els.pieceRotation.value = Math.round(p.rotation);
+				els.textContent.value = "";
+				els.textFontSize.value = "28";
+			} else if (t) {
+				els.posX.value = Math.round(t.x);
+				els.posY.value = Math.round(t.y);
+				els.pieceScale.value = "1";
+				els.pieceRotation.value = "0";
+				els.textContent.value = t.text || "";
+				els.textFontSize.value = t.fontSize || 28;
 			}
-		});
+		}
 
-		downloadBtn.addEventListener('click', () => {
-			if (!currentImageData) return;
-			const link = document.createElement('a');
-			link.href = currentImageData;
-			link.download = currentFilename;
-			document.body.appendChild(link);
-			link.click();
-			link.remove();
-		});
+		function syncJsonEditor() {
+			els.layoutJson.value = JSON.stringify(state, null, 2);
+		}
+
+		function downloadJson() {
+			syncJsonEditor();
+			const blob = new Blob([els.layoutJson.value], { type: "application/json;charset=utf-8" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `${state.meta.airportCode || "chart"}-layout.json`;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			URL.revokeObjectURL(url);
+			setStatus("Layout JSON downloaded.", "ok");
+		}
+
+		function exportPng() {
+			render();
+			const a = document.createElement("a");
+			a.href = els.canvas.toDataURL("image/png");
+			a.download = `${state.meta.airportCode || "chart"}-${state.meta.layoutSize}-${state.meta.theme}.png`;
+			document.body.appendChild(a);
+			a.click();
+			a.remove();
+			setStatus("PNG exported.", "ok");
+		}
+
+		function applyJson() {
+			try {
+				const parsed = JSON.parse(els.layoutJson.value);
+				if (!parsed.meta || !Array.isArray(parsed.pieces)) {
+					throw new Error("JSON must include { meta, pieces[] }.");
+				}
+				if (!["large", "medium"].includes(parsed.meta.layoutSize)) {
+					throw new Error("meta.layoutSize must be 'large' or 'medium'.");
+				}
+				state = {
+					meta: {
+						layoutSize: parsed.meta.layoutSize,
+						theme: parsed.meta.theme === "dark" ? "dark" : "light",
+						airportName: String(parsed.meta.airportName || "AIRPORT NAME"),
+						airportCode: String(parsed.meta.airportCode || "ABRV"),
+						cityState: String(parsed.meta.cityState || "CITY, STATE"),
+						docRef: String(parsed.meta.docRef || "AL-289 (FAA)"),
+						fontFamily: String(parsed.meta.fontFamily || "Arial, Helvetica, sans-serif"),
+						fontSizes: {
+							title: Number(parsed.meta.fontSizes?.title ?? 42),
+							docRef: Number(parsed.meta.fontSizes?.docRef ?? 18),
+							airport: Number(parsed.meta.fontSizes?.airport ?? 34),
+							city: Number(parsed.meta.fontSizes?.city ?? 24),
+							runway: Number(parsed.meta.fontSizes?.runway ?? 28)
+						},
+						anchors: {
+							topLeftTitle: {
+								x: Number(parsed.meta.anchors?.topLeftTitle?.x ?? TEMPLATE_REF.large.text.topLeftTitle.x),
+								y: Number(parsed.meta.anchors?.topLeftTitle?.y ?? TEMPLATE_REF.large.text.topLeftTitle.y)
+							},
+							topCenterRef: {
+								x: Number(parsed.meta.anchors?.topCenterRef?.x ?? TEMPLATE_REF.large.text.topCenterRef.x),
+								y: Number(parsed.meta.anchors?.topCenterRef?.y ?? TEMPLATE_REF.large.text.topCenterRef.y)
+							},
+							topRightAirport: {
+								x: Number(parsed.meta.anchors?.topRightAirport?.x ?? TEMPLATE_REF.large.text.topRightAirport.x),
+								y: Number(parsed.meta.anchors?.topRightAirport?.y ?? TEMPLATE_REF.large.text.topRightAirport.y)
+							},
+							topRightCity: {
+								x: Number(parsed.meta.anchors?.topRightCity?.x ?? TEMPLATE_REF.large.text.topRightCity.x),
+								y: Number(parsed.meta.anchors?.topRightCity?.y ?? TEMPLATE_REF.large.text.topRightCity.y)
+							},
+							bottomLeftTitle: {
+								x: Number(parsed.meta.anchors?.bottomLeftTitle?.x ?? TEMPLATE_REF.large.text.bottomLeftTitle.x),
+								y: Number(parsed.meta.anchors?.bottomLeftTitle?.y ?? TEMPLATE_REF.large.text.bottomLeftTitle.y)
+							},
+							bottomRightCity: {
+								x: Number(parsed.meta.anchors?.bottomRightCity?.x ?? TEMPLATE_REF.large.text.bottomRightCity.x),
+								y: Number(parsed.meta.anchors?.bottomRightCity?.y ?? TEMPLATE_REF.large.text.bottomRightCity.y)
+							},
+							bottomRightAirport: {
+								x: Number(parsed.meta.anchors?.bottomRightAirport?.x ?? TEMPLATE_REF.large.text.bottomRightAirport.x),
+								y: Number(parsed.meta.anchors?.bottomRightAirport?.y ?? TEMPLATE_REF.large.text.bottomRightAirport.y)
+							}
+						}
+					},
+					pieces: parsed.pieces
+						.filter((p) => getPartById(p.partId))
+						.map((p) => ({
+							id: String(p.id || `piece-${nextPieceId++}`),
+							partId: p.partId,
+							x: Number(p.x || 100),
+							y: Number(p.y || 100),
+							scale: Number(p.scale || 0.2),
+							rotation: Number(p.rotation || 0),
+							alpha: Number(p.alpha || 1)
+						}))
+				};
+				state.textItems = (parsed.textItems || [])
+					.filter(t => t && t.text && typeof t.x === 'number' && typeof t.y === 'number')
+					.map((t) => ({
+						id: String(t.id || `text-${nextTextItemId++}`),
+						text: String(t.text),
+						x: Number(t.x || 100),
+						y: Number(t.y || 100),
+						fontSize: Number(t.fontSize || 28),
+						align: t.align || "center"
+					}));
+				syncFormFromState();
+				syncSelectedControls();
+				render();
+				syncJsonEditor();
+				setStatus("Layout JSON applied.", "ok");
+			} catch (error) {
+				setStatus(`JSON error: ${error.message}`, "error");
+			}
+		}
+
+		function bindEvents() {
+			for (const el of [
+				els.layoutSize, els.theme, els.airportName, els.airportCode, els.cityState, els.docRef,
+				els.fontFamily, els.titleFontSize, els.docRefFontSize, els.airportFontSize, els.cityFontSize, els.runwayFontSize,
+				els.topLeftTitleX, els.topLeftTitleY,
+				els.topCenterRefX, els.topCenterRefY,
+				els.topRightAirportX, els.topRightAirportY,
+				els.topRightCityX, els.topRightCityY,
+				els.bottomLeftTitleX, els.bottomLeftTitleY,
+				els.bottomRightCityX, els.bottomRightCityY,
+				els.bottomRightAirportX, els.bottomRightAirportY
+			]) {
+				el.addEventListener("input", () => {
+					render();
+					syncJsonEditor();
+				});
+			}
+
+			els.canvas.addEventListener("mousedown", (evt) => {
+				const pt = canvasPoint(evt);
+				const result = pickPiece(pt.x, pt.y);
+				if (!result) {
+					selectedPieceId = null;
+					selectedTextItemId = null;
+					syncSelectedControls();
+					render();
+					return;
+				}
+				if (result.type === "piece") {
+					selectedPieceId = result.piece.id;
+					selectedTextItemId = null;
+					drag = { id: result.piece.id, offX: pt.x - result.piece.x, offY: pt.y - result.piece.y };
+				} else {
+					selectedTextItemId = result.item.id;
+					selectedPieceId = null;
+					drag = { id: result.item.id, offX: pt.x - result.item.x, offY: pt.y - result.item.y };
+				}
+				syncSelectedControls();
+				render();
+			});
+
+			window.addEventListener("mousemove", (evt) => {
+				if (!drag) return;
+				const pt = canvasPoint(evt);
+				const piece = state.pieces.find((p) => p.id === drag.id);
+				const item = state.textItems.find((t) => t.id === drag.id);
+				if (!piece && !item) return;
+				if (piece) {
+					piece.x = pt.x - drag.offX;
+					piece.y = pt.y - drag.offY;
+				} else {
+					item.x = pt.x - drag.offX;
+					item.y = pt.y - drag.offY;
+				}
+				syncSelectedControls();
+				render();
+			});
+
+			window.addEventListener("mouseup", () => {
+				if (drag) syncJsonEditor();
+				drag = null;
+			});
+
+			els.canvas.addEventListener("dragover", (e) => e.preventDefault());
+			els.canvas.addEventListener("drop", (e) => {
+				e.preventDefault();
+				const partId = e.dataTransfer.getData("text/plain");
+				const textType = partId ? null : e.dataTransfer.getData("text/text-type");
+				const pt = canvasPoint(e);
+				if (partId) {
+					addPiece(partId, pt.x, pt.y);
+				} else if (textType === "runway") {
+					addTextItem("RWY 12", pt.x, pt.y, state.meta.fontSizes?.runway ?? 28);
+				}
+				syncJsonEditor();
+				setStatus("Item dropped on canvas.", "ok");
+			});
+
+			for (const [el, key] of [
+				[els.posX, "posX"],
+				[els.posY, "posY"],
+				[els.pieceScale, "scale"],
+				[els.pieceRotation, "rotation"],
+				[els.textContent, "text"],
+				[els.textFontSize, "fontSize"]
+			]) {
+				el.addEventListener("input", () => {
+					const p = state.pieces.find((x) => x.id === selectedPieceId);
+					const t = state.textItems.find((x) => x.id === selectedTextItemId);
+					if (!p && !t) return;
+					if (p) {
+						if (key === "posX") p.x = Number(el.value || 0);
+						if (key === "posY") p.y = Number(el.value || 0);
+						if (key === "scale") p.scale = Number(el.value || 1);
+						if (key === "rotation") p.rotation = Number(el.value || 0);
+					} else if (t) {
+						if (key === "posX") t.x = Number(el.value || 0);
+						if (key === "posY") t.y = Number(el.value || 0);
+						if (key === "text") t.text = el.value;
+						if (key === "fontSize") t.fontSize = Number(el.value || 28);
+					}
+					render();
+					syncJsonEditor();
+				});
+			}
+
+			els.deletePieceBtn.addEventListener("click", () => {
+				if (selectedPieceId) {
+					state.pieces = state.pieces.filter((p) => p.id !== selectedPieceId);
+					selectedPieceId = null;
+					syncSelectedControls();
+					render();
+					syncJsonEditor();
+					setStatus("Piece deleted.", "warn");
+				} else if (selectedTextItemId) {
+					state.textItems = state.textItems.filter((t) => t.id !== selectedTextItemId);
+					selectedTextItemId = null;
+					syncSelectedControls();
+					render();
+					syncJsonEditor();
+					setStatus("Text item deleted.", "warn");
+				}
+			});
+
+			els.duplicatePieceBtn.addEventListener("click", () => {
+				const p = state.pieces.find((x) => x.id === selectedPieceId);
+				if (!p) return;
+				state.pieces.push({ ...p, id: `piece-${nextPieceId++}`, x: p.x + 20, y: p.y + 20 });
+				selectedPieceId = state.pieces[state.pieces.length - 1].id;
+				syncSelectedControls();
+				render();
+				syncJsonEditor();
+				setStatus("Piece duplicated.", "ok");
+			});
+
+			els.syncJsonBtn.addEventListener("click", () => {
+				syncJsonEditor();
+				setStatus("JSON synced.", "ok");
+			});
+
+			els.applyJsonBtn.addEventListener("click", applyJson);
+			els.exportPngBtn.addEventListener("click", exportPng);
+			els.exportJsonBtn.addEventListener("click", downloadJson);
+
+			els.clearBtn.addEventListener("click", () => {
+				state.pieces = [];
+				state.textItems = [];
+				selectedPieceId = null;
+				selectedTextItemId = null;
+				syncSelectedControls();
+				render();
+				syncJsonEditor();
+				setStatus("All pieces cleared.", "warn");
+			});
+
+			els.resetTextBtn.addEventListener("click", () => {
+				state.meta.airportName = "AIRPORT NAME";
+				state.meta.airportCode = "ABRV";
+				state.meta.cityState = "CITY, STATE";
+				state.meta.docRef = "AL-289 (FAA)";
+				state.meta.fontFamily = "Arial, Helvetica, sans-serif";
+				state.meta.fontSizes = { title: 42, docRef: 18, airport: 34, city: 24, runway: 28 };
+				syncFormFromState();
+				render();
+				syncJsonEditor();
+				setStatus("Template text reset.", "ok");
+			});
+		}
+
+		async function init() {
+			try {
+				await preloadParts();
+			buildPartsPanel();
+			document.querySelectorAll('[data-text-type]').forEach(card => {
+				card.addEventListener('dragstart', (e) => {
+					e.dataTransfer.setData('text/text-type', card.dataset.textType);
+				});
+			});
+			syncFormFromState();
+				bindEvents();
+				setStatus("Editor ready. Drag parts onto the canvas.", "ok");
+			} catch (error) {
+				setStatus(error.message, "error");
+			}
+		}
+
+		init();
 	</script>
 </body>
 </html>
