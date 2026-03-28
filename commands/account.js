@@ -8,7 +8,7 @@ module.exports = {
         .setDescription('the user to view the account information of')
         .setRequired(false)),
   async execute(interaction) {
-    const targetUser = interaction.options.getUser('user') || interaction.user;
+    const targetUser = interaction.options.getUser('user') ?? interaction.user;
     const user = await User.findOne({ DiscordID: targetUser.id });
     if (!user) {
         return interaction.reply({ content: 'This user does not have an account linked. Please use the /link command to link their account.', ephemeral: true });
@@ -26,7 +26,7 @@ module.exports = {
             {name:"User ID", value: `<@!${user.DiscordID}>` || 'N/A', inline: true},
             { name: 'Flight Hours', value: user.Flighthours || 'N/A', inline: true },
             { name: 'Roles', value: user.Role?.join(',\n') || 'N/A', inline: true },
-            { name: 'Account Created', value: user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A', inline: true }
+            { name: 'Call Sign', value: user.Callsign || 'N/A', inline: true }
         )
         .setThumbnail(targetUser.avatarURL() || "https://cdn.discordapp.com/attachments/1128199132030869536/1130794416448359420/unknown.png")
         .setColor("#87cefa")
