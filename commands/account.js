@@ -24,7 +24,7 @@ module.exports = {
         .addFields(
             { name: 'Username', value: user.Username || 'N/A', inline: true },
             {name:"User ID", value: `<@!${user.DiscordID}>` || 'N/A', inline: true},
-            { name: 'Flight Hours', value: user.Flighthours || 'N/A', inline: true },
+            { name: 'Flight Hours', value: user.Flighthours?.toString() || 'N/A', inline: true },
             { name: 'Roles', value: user.Role?.join(',\n') || 'N/A', inline: true },
             { name: 'Call Sign', value: user.Callsign || 'N/A', inline: true }
         )
