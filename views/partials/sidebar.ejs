@@ -110,7 +110,8 @@
             <summary class="sidebar-folder-title">Tools</summary>
             <div class="sidebar-folder-items">
                 <a class="sidebar-menu-item <%= locals.page === 'chart-maker' ? 'active' : '' %>" href="/chart-maker">Chart Maker</a>
-
+            </div>
+                </details>
                 <% if (locals.page === 'charts') { %>
                     <div class="sidebar-chart-picker">
                         <span class="sidebar-chart-label">Select Chart</span>
@@ -128,8 +129,7 @@
                         </ul>
                     </div>
                 <% } %>
-            </div>
-        </details>
+        
 
         <% if (locals.user) { %>
             <details class="sidebar-folder" data-folder="member" open>
