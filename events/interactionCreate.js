@@ -1,5 +1,6 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const Events = require("../schemas/events");
+const Users = require("../schemas/users");	
 
 const Devs =["582279365912559631","1087024962914766898"]
 
@@ -10,6 +11,53 @@ const command = client.commands.get(interaction.commandName);
 
 if (interaction.isButton()) {
   const [action, eventId] = interaction.customId.split("_");
+
+  if (interaction.user.bot) return interaction.reply({ content: 'Bots cannot interact with this button', ephemeral: true});
+  if (eventId === "hours" || eventId === "hours") {
+	const userId = interaction.customId.split("-")[1];
+	const user = await Users.findOne({ DiscordID: userId });
+	if (!user) {
+	  return interaction.reply({ content: "User not found.", ephemeral: true });
+	}
+	if (action === "approve") {
+	  // Handle approval logic, e.g., update user's flight hours, notify user, etc.
+	// input validation for hoursMins convert from string format (e.g., "1h 30m") to total hours in decimal format (e.g., 1.5)
+	const hoursMins = interaction.customId.split("-")[2];
+	const hoursMatch = hoursMins.match(/(\d+)h/);
+	  user.Flighthours += hoursMatch ? parseInt(hoursMatch[1]) : 0;
+	const minsMatch = hoursMins.match(/(\d+)m/);
+	  user.Flighthours += minsMatch ? parseInt(minsMatch[1]) / 60 : 0;
+	await user.save();
+	await interaction.reply({ content: `✅ Flight hours approved for ${user.Username}. Total flight hours: ${user.Flighthours.toFixed(2)}\n **By:** <@${interaction.user.id}>` });
+	// Optionally, notify the user about the approval
+	const embed = new EmbedBuilder()
+		.setTitle('Flight Hours Approved')
+		.setDescription(`Your flight hours submission has been approved!\n\n**Approved Hours:** ${hoursMins}\n**Total Flight Hours:** ${user.Flighthours.toFixed(2)}\n **By:** <@${interaction.user.id}>`)
+		.setColor('Green')
+		.setFooter({ text: 'VTOL VR ATC Bot' })
+		.setTimestamp();
+	var userToNotify = await client.users.fetch(user.DiscordID);
+	if (userToNotify) {
+		await userToNotify.send({ embeds: [embed] });
+	}
+	
+	} else if (action === "reject") {
+
+		var embedreject = new EmbedBuilder()
+		.setTitle('Flight Hours Rejected')
+		.setDescription(`Your flight hours submission has been rejected.\n\n**Submitted Hours:** ${interaction.customId.split("-")[2]}\n **By:** <@${interaction.user.id}>`)
+		.setColor('Red')
+		.setFooter({ text: 'VTOL VR ATC Bot' })
+		.setTimestamp();
+	await interaction.reply({ content: `❌ Flight hours rejected for ${user.Username}.\n **By:** <@${interaction.user.id}>`, ephemeral: true });
+	// Optionally, notify the user about the rejection
+	  var userToNotify = await client.users.fetch(user.DiscordID);
+	if (userToNotify) {
+		await userToNotify.send({ embeds: [embedreject] });
+	}
+	}
+	  return;
+  }
   if (action === "join") {
 	const event = await Events.findById(eventId);
 	if (!event) {

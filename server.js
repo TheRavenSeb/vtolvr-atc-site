@@ -1,5 +1,6 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = rateLimit;
 const path = require('path');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
@@ -75,6 +76,10 @@ if (isProduction) {
 }
 const PORT = process.env.PORT || 3000;
 const passwordResetRequests = new Map();
+
+function requestIpKey(req) {
+  return ipKeyGenerator(req.ip || '');
+}
 
 const IFR_FLIGHT_PLAN_CHANNEL_ID = '1471159799227088978';
 
@@ -331,7 +336,7 @@ const passwordResetIpLimiter = rateLimit({
   legacyHeaders: false,
   validate: rateLimitTrust,
   skip: (req) => req.method === 'OPTIONS',
-  keyGenerator: (req) => `pwreset:ip:${req.ip}`,
+  keyGenerator: (req) => `pwreset:ip:${requestIpKey(req)}`,
   handler: (req, res) => {
     res.status(429).json({ error: 'Too many password reset attempts from this network. Try again later.' });
   }
@@ -353,7 +358,7 @@ const passwordResetRequestPerEmailLimiter = rateLimit({
   skip: (req) => req.method === 'OPTIONS',
   keyGenerator: (req) => {
     const e = normalizeEmail(req.body?.email);
-    return e ? `pwreset:email:req:${e}` : `pwreset:email:req:empty:${req.ip}`;
+    return e ? `pwreset:email:req:${e}` : `pwreset:email:req:empty:${requestIpKey(req)}`;
   },
   handler: (req, res) => {
     res.status(429).json({ error: 'Too many reset code requests for this email. Try again later.' });
@@ -369,7 +374,7 @@ const passwordResetVerifyPerEmailLimiter = rateLimit({
   skip: (req) => req.method === 'OPTIONS',
   keyGenerator: (req) => {
     const e = normalizeEmail(req.body?.email);
-    return e ? `pwreset:email:verify:${e}` : `pwreset:email:verify:empty:${req.ip}`;
+    return e ? `pwreset:email:verify:${e}` : `pwreset:email:verify:empty:${requestIpKey(req)}`;
   },
   handler: (req, res) => {
     res.status(429).json({ error: 'Too many verification attempts for this email. Try again later.' });
@@ -385,7 +390,7 @@ const passwordResetCompletePerEmailLimiter = rateLimit({
   skip: (req) => req.method === 'OPTIONS',
   keyGenerator: (req) => {
     const e = normalizeEmail(req.body?.email);
-    return e ? `pwreset:email:reset:${e}` : `pwreset:email:reset:empty:${req.ip}`;
+    return e ? `pwreset:email:reset:${e}` : `pwreset:email:reset:empty:${requestIpKey(req)}`;
   },
   handler: (req, res) => {
     res.status(429).json({ error: 'Too many password reset completions for this email. Try again later.' });
@@ -415,7 +420,7 @@ const registerIpLimiter = rateLimit({
   legacyHeaders: false,
   validate: rateLimitTrust,
   skip: (req) => req.method === 'OPTIONS',
-  keyGenerator: (req) => `register:ip:${req.ip}`,
+  keyGenerator: (req) => `register:ip:${requestIpKey(req)}`,
   handler: (req, res) => {
     res.status(429).json({ error: 'Too many registration attempts from this network. Try again later.' });
   }
@@ -427,7 +432,7 @@ function applicationSubmitDiscordKey(req) {
   if (/^\d{17,20}$/.test(id)) {
     return `appsubmit:discord:${id}`;
   }
-  return `appsubmit:discord:invalid:${req.ip}`;
+  return `appsubmit:discord:invalid:${requestIpKey(req)}`;
 }
 
 const applicationSubmitIpLimiter = rateLimit({
@@ -437,7 +442,7 @@ const applicationSubmitIpLimiter = rateLimit({
   legacyHeaders: false,
   validate: rateLimitTrust,
   skip: (req) => req.method === 'OPTIONS',
-  keyGenerator: (req) => `appsubmit:ip:${req.ip}`,
+  keyGenerator: (req) => `appsubmit:ip:${requestIpKey(req)}`,
   handler: (req, res) => {
     res.status(429).json({ error: 'Too many application submissions from this network. Try again later.' });
   }
@@ -468,7 +473,7 @@ const loginIpLimiter = rateLimit({
   legacyHeaders: false,
   validate: rateLimitTrust,
   skip: (req) => req.method === 'OPTIONS',
-  keyGenerator: (req) => `login:ip:${req.ip}`,
+  keyGenerator: (req) => `login:ip:${requestIpKey(req)}`,
   handler: (req, res) => {
     res.status(429).json({ error: 'Too many sign-in attempts from this network. Try again later.' });
   }
@@ -488,7 +493,7 @@ const apiPerRouteLimiter = rateLimit({
   skip: (req) => req.method === 'OPTIONS',
   keyGenerator: (req) => {
     const pathOnly = String(req.originalUrl || '').split('?')[0];
-    return `api-route:${req.ip}:${req.method}:${pathOnly}`;
+    return `api-route:${requestIpKey(req)}:${req.method}:${pathOnly}`;
   },
   handler: (req, res) => {
     res.status(429).json({ error: 'Too many requests to this API. Try again later.' });
@@ -768,14 +773,18 @@ app.get("/applications",authHandler.restrict, (req, res) => {
 
   app.post("/api/applications/:id/approve", authHandler.AdminOnly("Admin"), async (req, res) => {
     const applicationId = req.params.id;
+    const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim().slice(0, 1000) : '';
     try {
       const application = await Application.findById(applicationId);
       if (!application) {
         return res.status(404).json({ error: 'Application not found' });
       }
       application.status = 'approved';
+      application.decisionReason = reason;
+      application.decisionDate = new Date();
       await application.save();
-      sendDM(application.discordId, `Congratulations ${application.name}! Your application for the ${application.type} position has been approved. We will be in touch with you soon regarding the next steps. Welcome to the team!`)
+      const reasonSuffix = reason ? `\n\nReason: ${reason}` : '';
+      sendDM(application.discordId, `Congratulations ${application.name}! Your application for the ${application.type} position has been approved. We will be in touch with you soon regarding the next steps. Welcome to the team!${reasonSuffix}`)
         .catch(error => {
           console.error('Error sending approval DM:', error);
         });
@@ -784,7 +793,7 @@ app.get("/applications",authHandler.restrict, (req, res) => {
         content: `<@&1462572777092546743> <@&1474154308873486528> Application Approved`,
         embeds: [{
             title: `Application Approved for ${application.type} position`,
-            description: `The application submitted by ${application.name} for the ${application.type} position has been approved. Please reach out to the applicant to coordinate next steps.`,
+          description: `The application submitted by ${application.name} for the ${application.type} position has been approved. Please reach out to the applicant to coordinate next steps.${reason ? `\n\nReason: ${reason}` : ''}`,
             color: 0x0000FF,
         }],
         timestamp: new Date().toISOString()
@@ -795,7 +804,7 @@ app.get("/applications",authHandler.restrict, (req, res) => {
           console.error('Error sending webhook notification:', error);
         });
 
-      res.json({ message: 'Application approved successfully' });
+      res.json({ message: 'Application approved successfully', reason: reason });
     } catch (error) {
       console.error('Error approving application:', error);
       res.status(500).json({ error: 'Failed to approve application' });
@@ -803,14 +812,18 @@ app.get("/applications",authHandler.restrict, (req, res) => {
   });
   app.post("/api/applications/:id/reject", authHandler.AdminOnly("Admin"), async (req, res) => {
     const applicationId = req.params.id;
+    const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim().slice(0, 1000) : '';
     try {
       const application = await Application.findById(applicationId);
       if (!application) {
         return res.status(404).json({ error: 'Application not found' });
       }
       application.status = 'rejected';
+      application.decisionReason = reason;
+      application.decisionDate = new Date();
       await application.save();
-      sendDM(application.discordId, `Hello ${application.name}, we regret to inform you that your application for the ${application.type} position has been rejected. Thank you for your interest and we encourage you to apply again in the future.`)
+      const reasonSuffix = reason ? `\n\nReason: ${reason}` : '';
+      sendDM(application.discordId, `Hello ${application.name}, we regret to inform you that your application for the ${application.type} position has been rejected. Thank you for your interest and we encourage you to apply again in the future.${reasonSuffix}`)
         .catch(error => {
           console.error('Error sending rejection DM:', error);
         });
@@ -819,7 +832,7 @@ app.get("/applications",authHandler.restrict, (req, res) => {
         content: `<@&1462572777092546743> <@&1474154308873486528> Application Rejected`,
         embeds: [{
             title: `Application Rejected for ${application.type} position`,
-            description: `The application submitted by ${application.name} for the ${application.type} position has been rejected. Please reach out to the applicant if you would like to provide feedback or encourage them to reapply in the future.`,
+          description: `The application submitted by ${application.name} for the ${application.type} position has been rejected. Please reach out to the applicant if you would like to provide feedback or encourage them to reapply in the future.${reason ? `\n\nReason: ${reason}` : ''}`,
             color: 0xFF0000,
         }],
         timestamp: new Date().toISOString()
@@ -830,7 +843,7 @@ app.get("/applications",authHandler.restrict, (req, res) => {
           console.error('Error sending webhook notification:', error);
         });
 
-      res.json({ message: 'Application rejected successfully' });
+      res.json({ message: 'Application rejected successfully', reason: reason });
     } catch (error) {
       console.error('Error rejecting application:', error);
       res.status(500).json({ error: 'Failed to reject application' });

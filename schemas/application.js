@@ -37,6 +37,13 @@ const schema = new mongoose.Schema({
   whyJoin: {
     type: String,
     
+  },
+  decisionReason: {
+    type: String,
+    default: ''
+  },
+  decisionDate: {
+    type: Date
   }
   
 
