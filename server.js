@@ -374,6 +374,16 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
   app.post("/api/applications/submit", async (req, res) => {
     const data = req.body;
     console.log('Received application data:', data);
+    // num of doc that contain the role of atc or enforcer to determine how many applications there are for each role, and if there are more than 5 applications for a role it returns an error message saying that there are too many applications for that role and to try again later
+    const numberOfATCApplications = await Users.countDocuments({ Role: { $in: ['atc'] } });
+    const numberOfEnforcerApplications = await Users.countDocuments({ Role: { $in: ['enforcer'] } });
+    if (data.type === 'atc' && numberOfATCApplications >= 7) {
+      return res.status(400).json({ error: 'There are currently too many ATC personnel. Please try again later.' });
+    }
+    if (data.type === 'enforcer' && numberOfEnforcerApplications >= 5) {
+      return res.status(400).json({ error: 'There are currently too many Enforcers. Please try again later.' });
+    }
+
     // check if application is for ATC or Enforcer and validate required fields make a new application object based on the schema
     if (data.type === 'atc') {
       if (!data.callsign) {
@@ -386,6 +396,7 @@ if (data.navigationLog === undefined || data.navigationLog === null || data.navi
     } else if(data.discordId === undefined || data.discordId === null){
       return res.status(400).json({ error: 'Discord ID is required for all applications' });
     }
+    
     
     else {
       return res.status(400).json({ error: 'Invalid application type' });
