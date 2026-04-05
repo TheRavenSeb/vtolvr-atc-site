@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder,ActionRow,ButtonStyle,ButtonBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonStyle, ButtonBuilder } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -40,15 +40,15 @@ module.exports = {
       )
       .setTimestamp();
 
-      const row = new ActionRow().addComponents(
+      const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`approve_hours_${interaction.user.id}_${hoursMins}`)
             .setLabel('Approve')
-            .setStyle('Success'),
+            .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
           .setCustomId(`reject_hours_${interaction.user.id}_${hoursMins}`)
             .setLabel('Reject')
-            .setStyle('Danger')
+            .setStyle(ButtonStyle.Danger)
       );
 
     try {
