@@ -9,11 +9,28 @@ module.exports = {
 	async execute(interaction, client) {
 const command = client.commands.get(interaction.commandName);
 
+const disableAllButtonsOnMessage = async (message) => {
+	if (!message || !Array.isArray(message.components) || message.components.length === 0) return;
+	const disabledRows = message.components.map((row) =>
+		ActionRowBuilder.from(row).setComponents(
+			row.components.map((component) => ButtonBuilder.from(component).setDisabled(true))
+		)
+	);
+	await message.edit({ components: disabledRows });
+};
+
 if (interaction.isButton()) {
   const [action, eventId] = interaction.customId.split("_");
 
   if (interaction.user.bot) return interaction.reply({ content: 'Bots cannot interact with this button', ephemeral: true});
   if (eventId === "hours" || eventId === "hours") {
+	const alreadyProcessed = interaction.message?.components?.every(row =>
+	  row.components.every(component => component.disabled)
+	);
+	if (alreadyProcessed) {
+	  return interaction.reply({ content: "This flight-hours request was already processed.", ephemeral: true });
+	}
+
 	const userId = interaction.customId.split("_")[2];
 	const user = await Users.findOne({ DiscordID: userId });
 	if (!user) {
@@ -28,6 +45,7 @@ if (interaction.isButton()) {
 	const minsMatch = hoursMins.match(/(\d+)m/);
 	  user.Flighthours += minsMatch ? parseInt(minsMatch[1]) / 60 : 0;
 	await user.save();
+	await disableAllButtonsOnMessage(interaction.message);
 	await interaction.reply({ content: `✅ Flight hours approved for ${user.Username}. Total flight hours: ${user.Flighthours.toFixed(2)}\n **By:** <@${interaction.user.id}>` });
 	// Optionally, notify the user about the approval
 	const embed = new EmbedBuilder()
@@ -49,6 +67,7 @@ if (interaction.isButton()) {
 		.setColor('Red')
 		.setFooter({ text: 'VTOL VR ATC Bot' })
 		.setTimestamp();
+	await disableAllButtonsOnMessage(interaction.message);
 	await interaction.reply({ content: `❌ Flight hours rejected for ${user.Username}.\n **By:** <@${interaction.user.id}>`, ephemeral: true });
 	// Optionally, notify the user about the rejection
 	  var userToNotify = await client.users.fetch(user.DiscordID);
