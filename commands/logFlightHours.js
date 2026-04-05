@@ -42,11 +42,11 @@ module.exports = {
 
       const row = new ActionRow().addComponents(
         new ButtonBuilder()
-          .setCustomId(`approve_hours-${interaction.user.id}-${hoursMins}`)
+          .setCustomId(`approve_hours_${interaction.user.id}_${hoursMins}`)
             .setLabel('Approve')
             .setStyle('Success'),
         new ButtonBuilder()
-          .setCustomId(`reject_hours-${interaction.user.id}-${hoursMins}`)
+          .setCustomId(`reject_hours_${interaction.user.id}_${hoursMins}`)
             .setLabel('Reject')
             .setStyle('Danger')
       );

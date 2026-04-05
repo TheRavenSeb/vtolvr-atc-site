@@ -14,7 +14,7 @@ if (interaction.isButton()) {
 
   if (interaction.user.bot) return interaction.reply({ content: 'Bots cannot interact with this button', ephemeral: true});
   if (eventId === "hours" || eventId === "hours") {
-	const userId = interaction.customId.split("-")[1];
+	const userId = interaction.customId.split("_")[2];
 	const user = await Users.findOne({ DiscordID: userId });
 	if (!user) {
 	  return interaction.reply({ content: "User not found.", ephemeral: true });
@@ -22,7 +22,7 @@ if (interaction.isButton()) {
 	if (action === "approve") {
 	  // Handle approval logic, e.g., update user's flight hours, notify user, etc.
 	// input validation for hoursMins convert from string format (e.g., "1h 30m") to total hours in decimal format (e.g., 1.5)
-	const hoursMins = interaction.customId.split("-")[2];
+	const hoursMins = interaction.customId.split("_")[3];
 	const hoursMatch = hoursMins.match(/(\d+)h/);
 	  user.Flighthours += hoursMatch ? parseInt(hoursMatch[1]) : 0;
 	const minsMatch = hoursMins.match(/(\d+)m/);
