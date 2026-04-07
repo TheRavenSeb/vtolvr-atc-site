@@ -1043,7 +1043,7 @@ app.post("/api/metar/submit", authHandler.MetarStaffApiOnly, (req, res) => {
   res.json({ message: 'METAR submitted successfully' });
 });
 
-app.get("/api/metar/:sessionId", authHandler.MetarStaffApiOnly, (req, res) => {
+app.get("/api/metar/:sessionId" , (req, res) => {
   const sessionId = req.params.sessionId;
   const metarData = metarSubmissions[sessionId];
   if (metarData) {
