@@ -682,7 +682,7 @@ app.post('/api/ifr/submit', authHandler.restrictApi, async function (req, res) {
     if (data.type === 'atc' && numberOfATCApplications >= 7) {
       return res.status(400).json({ error: 'There are currently too many ATC personnel. Please try again later.' });
     }
-    if (data.type === 'enforcer' && numberOfEnforcerApplications >= 5) {
+    if (data.type === 'enforcer' && numberOfEnforcerApplications >= 6) {
       return res.status(400).json({ error: 'There are currently too many Enforcers. Please try again later.' });
     }
 
