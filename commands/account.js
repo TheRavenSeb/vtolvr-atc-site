@@ -16,7 +16,7 @@ module.exports = {
     const profileButton = new ButtonBuilder()
         .setLabel('View own Profile')
         .setStyle(ButtonStyle.Link)
-        .setURL(`https://arn-control.com/profile`);
+        .setURL(`https://atc-vtolvr.site/profile`);
     const row = new ActionRowBuilder().addComponents(profileButton);
     const embed = new EmbedBuilder()
         .setTitle(`${targetUser.username}'s Account Information`)
